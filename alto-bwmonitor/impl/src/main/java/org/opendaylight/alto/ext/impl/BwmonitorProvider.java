@@ -8,12 +8,16 @@
 package org.opendaylight.alto.ext.impl;
 
 import org.opendaylight.controller.md.sal.binding.api.DataBroker;
+import org.opendaylight.controller.sal.binding.api.BindingAwareBroker;
+import org.opendaylight.controller.sal.binding.api.BindingAwareProvider;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.bwmonitor.rev150105.AltoBwmonitorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BwmonitorProvider {
+public class BwmonitorProvider{
 
     private static final Logger LOG = LoggerFactory.getLogger(BwmonitorProvider.class);
+    private BindingAwareBroker.RpcRegistration<AltoBwmonitorService> bwmonitorService;
 
     private final DataBroker dataBroker;
 

@@ -4,6 +4,39 @@ module alto-bwmonitor {
     prefix "alto-bwmonitor";
 
     revision "2015-01-05" {
-        description "Initial revision of alto-bwmonitor model";
+        description "Get real time bandwidth of specific port";
+    }
+
+    rpc bwmonitor-query {
+        input {
+            leaf nodeId {
+                type string;
+            }
+        }
+        output {
+            leaf bandwidth {
+                type int32;
+            }
+        }
+    }
+
+    rpc bwmonitor-register {
+        input {
+            leaf nodeId {
+                type string;
+            }
+        }
+        output {
+            leaf result { type boolean; }
+        }
+    }
+
+    container speeds {
+        list node {
+            key nodeId;
+            leaf nodeId { type string; }
+
+            leaf speed { type int32; }
+        }
     }
 }
