@@ -54,7 +54,7 @@ public class PathManagerIT extends AbstractMdsalTestBase {
     }
 
     @Test
-    public void testalto-pathmanagerFeatureLoad() {
+    public void testaltopathmanagerFeatureLoad() {
         Assert.assertTrue(true);
     }
 }
