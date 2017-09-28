@@ -6,4 +6,48 @@ module alto-pathmanager {
     revision "2015-01-05" {
         description "Initial revision of alto-pathmanager model";
     }
+
+    import ietf-inet-types {
+        prefix "ietf-inet";
+    }
+    import ietf-yang-types {
+        prefix "ietf-yang-types";
+    }
+    import network-topology {
+        prefix "network-topology";
+    }
+
+
+    container path {
+        list flow {
+            key id;
+            leaf id {
+                type int32;
+            }
+            uses flow;
+            list links {
+                key link;
+                leaf link {
+                    type network-topology:link-id;
+
+                }
+            }
+        }
+    }
+
+    grouping flow {
+        leaf srcIP {
+            type ietf-inet:ip-address;
+        }
+        leaf dstIP {
+            type ietf-inet:ip-address;
+        }
+        leaf srcMac {
+            type ietf-yang-types:mac-address;
+        }
+        leaf dstMac {
+            type ietf-yang-types:mac-address;
+        }
+    }
 }
+

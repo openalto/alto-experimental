@@ -25,4 +25,27 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
        build failure. Please do not modify this unless you have a good reason. -->
   <name>ODL :: org.opendaylight.alto.ext :: ${project.artifactId}</name>
   <packaging>bundle</packaging>
+
+
+  <dependencies>
+
+    <dependency>
+      <groupId>org.opendaylight.mdsal.model</groupId>
+      <artifactId>ietf-inet-types-2013-07-15</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.opendaylight.mdsal.model</groupId>
+      <artifactId>ietf-yang-types-20130715</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.opendaylight.mdsal.model</groupId>
+      <artifactId>ietf-topology</artifactId>
+      <version>2013.10.21.10.1-Carbon</version>
+
+    </dependency>
+
+  </dependencies>
+
 </project>
