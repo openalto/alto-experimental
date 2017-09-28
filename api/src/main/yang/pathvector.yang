@@ -1,0 +1,83 @@
+module pathvector {
+    yang-version 1;
+    namespace "urn:opendaylight:params:xml:ns:yang:pathvector";
+    prefix "pathvector";
+
+    revision "2015-01-05" {
+        description "Initial revision of pathvector model";
+    }
+
+
+
+    import ietf-inet-types {
+        prefix "ietf-inet";
+    }
+
+    typedef cost-metric {
+        type string {
+            pattern "[0-9a-zA-Z\-_:]*";
+            length "1..32";
+        }
+    }
+
+    grouping cost-type-data {
+        leaf cost-metric {
+            type cost-metric;
+        }
+        leaf cost-mode {
+            type string;
+            mandatory true;
+        }
+    }
+
+    typedef query-id {
+        type string {
+            length "1..64";
+        }
+    }
+
+    grouping vtag {
+        leaf query-id {
+            type query-id;
+        }
+    }
+
+    grouping endpoint-pair {
+        choice ip-domain {
+            case ip-v4 {
+                leaf src {
+                    type ietf-inet:ipv4-address;
+                    mandatory true;
+                }
+                leaf dst {
+                    type ietf-inet:ipv4-address;
+                    mandatory true;
+                }
+            }
+        }
+    }
+
+    grouping endpoint-flows {
+        list endpoint-flow {
+            key id;
+            leaf id {
+                type int32;
+            }
+            uses endpoint-pair;
+        }
+    }
+    rpc query {
+        input {
+            leaf name {
+                type string ;
+            }
+        }
+        output {
+            leaf greeting {
+                type string;
+            }
+        }
+    }
+
+
+}

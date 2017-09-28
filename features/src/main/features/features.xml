@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- vi: set et smarttab sw=4 tabstop=4: -->
+<!--
+Copyright © 2017 Yale University and others. All rights reserved.
+
+This program and the accompanying materials are made available under the
+terms of the Eclipse Public License v1.0 which accompanies this distribution,
+and is available at http://www.eclipse.org/legal/epl-v10.html
+-->
+<features name="odl-pathvector-${project.version}" xmlns="http://karaf.apache.org/xmlns/features/v1.2.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://karaf.apache.org/xmlns/features/v1.2.0 http://karaf.apache.org/xmlns/features/v1.2.0">
+  <repository>mvn:org.opendaylight.yangtools/features-yangtools/{{VERSION}}/xml/features</repository>
+  <repository>mvn:org.opendaylight.controller/features-mdsal/{{VERSION}}/xml/features</repository>
+  <repository>mvn:org.opendaylight.mdsal.model/features-mdsal-model/{{VERSION}}/xml/features</repository>
+  <repository>mvn:org.opendaylight.netconf/features-restconf/{{VERSION}}/xml/features</repository>
+  <repository>mvn:org.opendaylight.dluxapps/features-dluxapps/{{VERSION}}/xml/features</repository>
+  <repository>mvn:org.opendaylight.openflowplugin/features-openflowplugin/${openflow.plugin.version}/xml/features</repository>
+  <repository>mvn:org.opendaylight.l2switch/features-l2switch/${l2switch.version}/xml/features</repository>
+
+  <feature name='odl-pathvector-api' version='${project.version}' description='OpenDaylight :: pathvector :: api'>
+    <feature version='${mdsal.model.version}'>odl-mdsal-models</feature>
+    <bundle>mvn:org.opendaylight.alto/pathvector-api/{{VERSION}}</bundle>
+  </feature>
+  <feature name='odl-pathvector' version='${project.version}' description='OpenDaylight :: pathvector'>
+    <feature version='${mdsal.version}'>odl-mdsal-broker</feature>
+    <feature version='${l2switch.version}'>odl-l2switch-all</feature>
+    <feature version='${openflow.plugin.version}'>odl-openflowplugin-southbound</feature>
+    <feature version='${openflow.plugin.version}'>odl-openflowplugin-flow-services</feature>
+    <feature version='${project.version}'>odl-pathvector-api</feature>
+    <bundle>mvn:org.opendaylight.alto/pathvector-impl/{{VERSION}}</bundle>
+  </feature>
+  <feature name='odl-pathvector-rest' version='${project.version}' description='OpenDaylight :: pathvector :: REST'>
+    <feature version="${project.version}">odl-pathvector</feature>
+    <feature version="${restconf.version}">odl-restconf</feature>
+  </feature>
+  <feature name='odl-pathvector-ui' version='${project.version}' description='OpenDaylight :: pathvector :: UI'>
+    <feature version="${restconf.version}">odl-mdsal-apidocs</feature>
+    <feature version="${dluxapps.version}">odl-dluxapps-yangman</feature>
+    <feature version="${project.version}">odl-propertymap-rest</feature>
+    <feature version="${project.version}">odl-pathvector-rest</feature>
+  </feature>
+  <feature name='odl-pathvector-cli' version='${project.version}' description='OpenDaylight :: pathvector :: CLI'>
+    <feature version="${project.version}">odl-pathvector</feature>
+    <bundle>mvn:org.opendaylight.alto/pathvector-cli/{{VERSION}}</bundle>
+  </feature>
+
+
+  <feature name='odl-propertymap-api' version='${project.version}' description='OpenDaylight :: propertymap :: api'>
+    <feature version='${mdsal.model.version}'>odl-mdsal-models</feature>
+    <bundle>mvn:org.opendaylight.alto/propertymap-api/{{VERSION}}</bundle>
+  </feature>
+  <feature name='odl-propertymap' version='${project.version}' description='OpenDaylight :: propertymap'>
+    <feature version='${mdsal.version}'>odl-mdsal-broker</feature>
+    <feature version='${project.version}'>odl-propertymap-api</feature>
+    <bundle>mvn:org.opendaylight.alto/propertymap-impl/{{VERSION}}</bundle>
+  </feature>
+
+  <feature name='odl-propertymap-rest' version='${project.version}' description='OpenDaylight :: propertymap :: REST'>
+    <feature version="${project.version}">odl-propertymap</feature>
+    <feature version="${restconf.version}">odl-restconf</feature>
+  </feature>
+
+  <feature name='odl-propertymap-cli' version='${project.version}' description='OpenDaylight :: propertymap :: CLI'>
+    <feature version="${project.version}">odl-propertymap</feature>
+    <bundle>mvn:org.opendaylight.alto/propertymap-cli/{{VERSION}}</bundle>
+  </feature>
+
+</features>
