@@ -1,0 +1,31 @@
+language: java
+
+cache:
+  directories:
+  - $HOME/.m2
+
+matrix:
+  include:
+  - jdk: oraclejdk8
+    env: CUSTOM_MVN_VERSION="3.5.0"
+  - jdk: openjdk8
+    env: CUSTOM_MVN_VERSION="3.5.0"
+
+install:
+  - if [[ -n "${CUSTOM_MVN_VERION}" ]]; then
+      echo "Download Maven ${CUSTOM_MVN_VERION}....";
+      if [[ "${CUSTOM_MVN_VERION}" == "3.0" ]]; then
+        wget https://archive.apache.org/dist/maven/binaries/apache-maven-3.0-bin.zip || travis_terminate 1;
+      else
+        wget https://archive.apache.org/dist/maven/maven-3/${CUSTOM_MVN_VERION}/binaries/apache-maven-${CUSTOM_MVN_VERION}-bin.zip || travis_terminate 1;
+      fi;
+      unzip -qq apache-maven-${CUSTOM_MVN_VERION}-bin.zip || travis_terminate 1;
+      export M2_HOME=$PWD/apache-maven-${CUSTOM_MVN_VERION};
+      export PATH=$M2_HOME/bin:$PATH;
+      export MAVEN_OPTS="-Xmx1048m -XX:MaxPermSize=512m"
+      mvn -version;
+    fi;
+    cp -n $HOME/.m2/settings.xml{,.orig} ;
+    wget -q -O - https://raw.githubusercontent.com/opendaylight/odlparent/master/settings.xml > $HOME/.m2/settings.xml ;
+script:
+  - mvn clean install -q
