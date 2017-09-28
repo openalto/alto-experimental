@@ -1,7 +1,4 @@
 language: java
-jdk:
-- oraclejdk8
-- openjdk8
 
 matrix:
   include:
@@ -27,4 +24,4 @@ install:
     cp -n $HOME/.m2/settings.xml{,.orig} ;
     wget -q -O - https://raw.githubusercontent.com/opendaylight/odlparent/master/settings.xml > $HOME/.m2/settings.xml ;
 script:
-  - mvn clean install
+  - mvn clean install -q
