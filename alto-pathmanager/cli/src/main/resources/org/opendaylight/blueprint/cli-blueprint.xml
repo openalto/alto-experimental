@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- vi: set et smarttab sw=4 tabstop=4: -->
 <!--
-Copyright © 2017 snlab and others. All rights reserved.
+Copyright © 2017 SNLab and others. All rights reserved.
 
 This program and the accompanying materials are made available under the
 terms of the Eclipse Public License v1.0 which accompanies this distribution,
@@ -15,15 +15,15 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
     interface="org.opendaylight.controller.md.sal.binding.api.DataBroker"
     odl:type="default" />
 
-  <bean id="cliCommandsImpl" class="snlab.cli.impl.pathmanagerCliCommandsImpl">
+  <bean id="cliCommandsImpl" class="org.opendaylight.alto.ext.cli.impl.PathManagerCliCommandsImpl">
     <argument ref="dataBroker" />
   </bean>
   <service ref="cliCommandsImpl" odl:type="default"
-    interface="snlab.cli.api.pathmanagerCliCommands" />
+    interface="org.opendaylight.alto.ext.cli.api.PathManagerCliCommands" />
 
     <command-bundle xmlns="http://karaf.apache.org/xmlns/shell/v1.0.0">
         <command name="test-command">
-            <action class="snlab.cli.commands.pathmanagerCliTestCommand">
+            <action class="org.opendaylight.alto.ext.cli.commands.PathManagerCliTestCommand">
                 <argument ref="cliCommandsImpl"/>
             </action>
         </command>

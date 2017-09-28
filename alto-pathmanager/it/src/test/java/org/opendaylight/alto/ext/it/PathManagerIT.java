@@ -1,11 +1,11 @@
 /*
- * Copyright © 2017 snlab and others.  All rights reserved.
+ * Copyright © 2017 SNLab and others.  All rights reserved.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v1.0 which accompanies this distribution,
  * and is available at http://www.eclipse.org/legal/epl-v10.html
  */
-package snlab.it;
+package org.opendaylight.alto.ext.it;
 
 import static org.ops4j.pax.exam.CoreOptions.composite;
 import static org.ops4j.pax.exam.CoreOptions.maven;
@@ -26,13 +26,13 @@ import org.slf4j.LoggerFactory;
 
 @RunWith(PaxExam.class)
 @ExamReactorStrategy(PerClass.class)
-public class pathmanagerIT extends AbstractMdsalTestBase {
-    private static final Logger LOG = LoggerFactory.getLogger(pathmanagerIT.class);
+public class PathManagerIT extends AbstractMdsalTestBase {
+    private static final Logger LOG = LoggerFactory.getLogger(PathManagerIT.class);
 
     @Override
     public MavenUrlReference getFeatureRepo() {
         return maven()
-                .groupId("snlab")
+                .groupId("org.opendaylight.alto.ext")
                 .artifactId("alto-pathmanager-features")
                 .classifier("features")
                 .type("xml")
@@ -47,7 +47,7 @@ public class pathmanagerIT extends AbstractMdsalTestBase {
     @Override
     public Option getLoggingOption() {
         Option option = editConfigurationFilePut(ORG_OPS4J_PAX_LOGGING_CFG,
-                logConfiguration(pathmanagerIT.class),
+                logConfiguration(PathManagerIT.class),
                 LogLevel.INFO.name());
         option = composite(option, super.getLoggingOption());
         return option;

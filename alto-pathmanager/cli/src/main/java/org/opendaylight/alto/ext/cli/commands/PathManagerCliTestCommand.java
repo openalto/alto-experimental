@@ -1,16 +1,16 @@
 /*
- * Copyright © 2017 snlab and others.  All rights reserved.
+ * Copyright © 2017 SNLab and others.  All rights reserved.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License v1.0 which accompanies this distribution,
  * and is available at http://www.eclipse.org/legal/epl-v10.html
  */
-package snlab.cli.commands;
+package org.opendaylight.alto.ext.cli.commands;
 
 import org.apache.karaf.shell.commands.Command;
 import org.apache.karaf.shell.commands.Option;
 import org.apache.karaf.shell.console.AbstractAction;
-import snlab.cli.api.pathmanagerCliCommands;
+import org.opendaylight.alto.ext.cli.api.PathManagerCliCommands;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,12 +19,12 @@ import org.slf4j.LoggerFactory;
  * Specify command details by updating the fields in the Command annotation below.
  */
 @Command(name = "test-command", scope = "add the scope of the command, usually project name", description = "add a description for the command")
-public class pathmanagerCliTestCommand extends AbstractAction {
+public class PathManagerCliTestCommand extends AbstractAction {
 
-    private static final Logger LOG = LoggerFactory.getLogger(pathmanagerCliTestCommand.class);
-    protected final pathmanagerCliCommands service;
+    private static final Logger LOG = LoggerFactory.getLogger(PathManagerCliTestCommand.class);
+    protected final PathManagerCliCommands service;
 
-    public pathmanagerCliTestCommand(final pathmanagerCliCommands service) {
+    public PathManagerCliTestCommand(final PathManagerCliCommands service) {
         this.service = service;
     }
 

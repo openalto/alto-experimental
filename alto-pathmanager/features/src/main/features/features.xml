@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- vi: set et smarttab sw=4 tabstop=4: -->
 <!--
-Copyright © 2017 snlab and others. All rights reserved.
+Copyright © 2017 SNLab and others. All rights reserved.
 
 This program and the accompanying materials are made available under the
 terms of the Eclipse Public License v1.0 which accompanies this distribution,
@@ -17,12 +17,12 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
   <repository>mvn:org.opendaylight.dluxapps/features-dluxapps/{{VERSION}}/xml/features</repository>
   <feature name='odl-alto-pathmanager-api' version='${project.version}' description='OpenDaylight :: alto-pathmanager :: api'>
     <feature version='${mdsal.model.version}'>odl-mdsal-models</feature>
-    <bundle>mvn:snlab/alto-pathmanager-api/{{VERSION}}</bundle>
+    <bundle>mvn:org.opendaylight.alto.ext/alto-pathmanager-api/{{VERSION}}</bundle>
   </feature>
   <feature name='odl-alto-pathmanager' version='${project.version}' description='OpenDaylight :: alto-pathmanager'>
     <feature version='${mdsal.version}'>odl-mdsal-broker</feature>
     <feature version='${project.version}'>odl-alto-pathmanager-api</feature>
-    <bundle>mvn:snlab/alto-pathmanager-impl/{{VERSION}}</bundle>
+    <bundle>mvn:org.opendaylight.alto.ext/alto-pathmanager-impl/{{VERSION}}</bundle>
   </feature>
   <feature name='odl-alto-pathmanager-rest' version='${project.version}' description='OpenDaylight :: alto-pathmanager :: REST'>
     <feature version="${project.version}">odl-alto-pathmanager</feature>
@@ -35,7 +35,7 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
   </feature>
   <feature name='odl-alto-pathmanager-cli' version='${project.version}' description='OpenDaylight :: alto-pathmanager :: CLI'>
     <feature version="${project.version}">odl-alto-pathmanager</feature>
-    <bundle>mvn:snlab/alto-pathmanager-cli/{{VERSION}}</bundle>
+    <bundle>mvn:org.opendaylight.alto.ext/alto-pathmanager-cli/{{VERSION}}</bundle>
   </feature>
 
 </features>
