@@ -1,0 +1,9 @@
+module alto-bwmonitor {
+    yang-version 1;
+    namespace "urn:opendaylight:params:xml:ns:yang:alto-bwmonitor";
+    prefix "alto-bwmonitor";
+
+    revision "2015-01-05" {
+        description "Initial revision of alto-bwmonitor model";
+    }
+}
