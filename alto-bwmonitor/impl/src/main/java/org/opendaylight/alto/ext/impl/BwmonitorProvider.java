@@ -9,7 +9,6 @@ package org.opendaylight.alto.ext.impl;
 
 import org.opendaylight.controller.md.sal.binding.api.DataBroker;
 import org.opendaylight.controller.sal.binding.api.BindingAwareBroker;
-import org.opendaylight.controller.sal.binding.api.BindingAwareProvider;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.bwmonitor.rev150105.AltoBwmonitorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +19,7 @@ public class BwmonitorProvider{
     private BindingAwareBroker.RpcRegistration<AltoBwmonitorService> bwmonitorService;
 
     private final DataBroker dataBroker;
+    private BwFetchingService bwFetchingService;
 
     public BwmonitorProvider(final DataBroker dataBroker) {
         this.dataBroker = dataBroker;
@@ -29,13 +29,13 @@ public class BwmonitorProvider{
      * Method called when the blueprint container is created.
      */
     public void init() {
-        LOG.info("BwmonitorProvider Session Initiated");
+        LOG.info("BwmonitorProvider session initiated");
     }
 
     /**
      * Method called when the blueprint container is destroyed.
      */
     public void close() {
-        LOG.info("BwmonitorProvider Closed");
+        LOG.info("BwmonitorProvider closed");
     }
 }

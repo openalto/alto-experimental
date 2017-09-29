@@ -14,7 +14,8 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
 
 
   <properties>
-      <openflowplugin.version>0.4.1-Carbon</openflowplugin.version>
+    <openflowplugin.version>0.4.1-Carbon</openflowplugin.version>
+    <l2switch.version>0.5.1-Carbon</l2switch.version>
   </properties>
   <parent>
     <groupId>org.opendaylight.controller</groupId>
@@ -42,6 +43,12 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
       <groupId>org.opendaylight.openflowplugin.model</groupId>
       <artifactId>model-flow-statistics</artifactId>
       <version>${openflowplugin.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.opendaylight.l2switch.loopremover</groupId>
+      <artifactId>loopremover-impl</artifactId>
+      <version>${l2switch.version}</version>
     </dependency>
 
     <!-- Testing Dependencies -->
