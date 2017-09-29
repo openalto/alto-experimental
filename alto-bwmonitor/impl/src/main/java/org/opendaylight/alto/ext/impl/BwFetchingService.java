@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 public class BwFetchingService implements DataTreeChangeListener<FlowCapableNodeConnectorStatisticsData>{
@@ -38,22 +39,19 @@ public class BwFetchingService implements DataTreeChangeListener<FlowCapableNode
      */
     public BwFetchingService(DataBroker dataBroker){
         LOG.info("BwFetchingService initialized");
+        rxMap = new HashMap<>();
         this.dataBroker = dataBroker;
         registerPortListener();
     }
 
     /**
      * Map to store the essential infomation
-     * Map: (Port name -> (Timestamp -> Sent bytes))
+     * Map: (Port name -> (Timestamp -> Receive bytes))
      */
-    private Map<String, Map<Double, Integer>> sxMap;
+    private Map<String, Map<Double, Integer>> rxMap;
 
 
     private void syncToDataBroker(){
-
-    }
-
-    private void syncFromDataBroker(){
 
     }
 
@@ -69,5 +67,11 @@ public class BwFetchingService implements DataTreeChangeListener<FlowCapableNode
     @Override
     public void onDataTreeChanged(@Nonnull Collection<DataTreeModification<FlowCapableNodeConnectorStatisticsData>> changes) {
 
+    }
+
+    public void addListeningPort(String portId){
+        if(!this.rxMap.containsKey(portId)){
+            rxMap.put(portId, new HashMap<>());
+        }
     }
 }

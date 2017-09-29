@@ -91,6 +91,8 @@ public class BwmonitorImpl implements AltoBwmonitorService{
         if(success) success = writeToSpeeds(input);
         BwmonitorRegisterOutput output = new BwmonitorRegisterOutputBuilder()
                 .setResult(success).build();
+        LOG.debug("Register node: " + input.getNodeId());
+        this.bwFetchingService.addListeningPort(input.getNodeId());
         return RpcResultBuilder.success(output).buildFuture();
     }
 
@@ -103,6 +105,7 @@ public class BwmonitorImpl implements AltoBwmonitorService{
             if(nodeData.isPresent()){
                 BwmonitorQueryOutput output = new BwmonitorQueryOutputBuilder()
                         .setBandwidth(nodeData.get().getSpeed()).build();
+                LOG.debug("Query node: " + input.getNodeId() + ", value: " + output.getBandwidth());
                 return RpcResultBuilder.success(output).buildFuture();
             }
         } catch (InterruptedException|ExecutionException e){
