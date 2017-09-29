@@ -28,16 +28,6 @@ and is available at http://www.eclipse.org/legal/epl-v10.html INTERNAL
     <url>https://wiki.opendaylight.org/view/alto-pathmanager:Main</url>
   </scm>
 
-  <modules>
-    <module>api</module>
-    <module>impl</module>
-    <module>karaf</module>
-    <module>features</module>
-    <module>artifacts</module>
-    <module>cli</module>
-    <module>it</module>
-  </modules>
-
   <!-- DO NOT install or deploy the repo root pom as it's only needed to initiate a build -->
   <build>
     <plugins>
@@ -59,6 +49,40 @@ and is available at http://www.eclipse.org/legal/epl-v10.html INTERNAL
   </build>
 
   <profiles>
+    <profile>
+      <id>minimal</id>
+      <activation>
+        <activeByDefault>true</activeByDefault>
+      </activation>
+      <modules>
+        <module>api</module>
+        <module>impl</module>
+        <module>cli</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>dev</id>
+      <modules>
+        <module>api</module>
+        <module>impl</module>
+        <module>karaf</module>
+        <module>features</module>
+        <module>artifacts</module>
+        <module>cli</module>
+      </modules>
+    </profile>
+    <profile>
+      <id>test</id>
+      <modules>
+        <module>api</module>
+        <module>impl</module>
+        <module>features</module>
+        <module>artifacts</module>
+        <module>cli</module>
+        <!-- <module>it</module> -->
+      </modules>
+    </profile>
+
     <profile>
       <!--
           This profile is to ensure we only build javadocs reports
