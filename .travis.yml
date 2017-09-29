@@ -1,11 +1,5 @@
 language: java
 
-cache:
-  directories:
-  - $HOME/.m2
-before_cache:
-  - rm -rf $HOME/.m2/repository/org/opendaylight/alto
-
 matrix:
   include:
   - jdk: oraclejdk8
@@ -29,6 +23,6 @@ install:
     fi;
     cp -n $HOME/.m2/settings.xml{,.orig} ;
     wget -q -O - https://raw.githubusercontent.com/opendaylight/odlparent/master/settings.xml > $HOME/.m2/settings.xml ;
-  - mvn install -nsu -Ptest -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+  - mvn install -q -nsu -Ptest -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 script:
   - mvn test -Ptest -B
