@@ -101,6 +101,15 @@ and is available at http://www.eclipse.org/legal/epl-v10.html INTERNAL
       <scope>runtime</scope>
     </dependency>
     <dependency>
+      <groupId>org.opendaylight.openflowplugin</groupId>
+      <artifactId>features-openflowplugin</artifactId>
+      <classifier>features</classifier>
+      <version>${openflowplugin.version}</version>
+      <type>xml</type>
+      <scope>runtime</scope>
+    </dependency>
+
+    <dependency>
       <groupId>${project.groupId}</groupId>
       <artifactId>alto-bwmonitor-impl</artifactId>
       <version>${project.version}</version>
@@ -114,20 +123,6 @@ and is available at http://www.eclipse.org/legal/epl-v10.html INTERNAL
       <groupId>${project.groupId}</groupId>
       <artifactId>alto-bwmonitor-cli</artifactId>
       <version>${project.version}</version>
-    </dependency>
-      <dependency>
-      <groupId>org.opendaylight.openflowplugin</groupId>
-      <artifactId>odl-openflowplugin-flow-services</artifactId>
-      <version>${openflowplugin.version}</version>
-      <type>xml</type>
-      <classifier>features</classifier>
-    </dependency>
-    <dependency>
-      <groupId>org.opendaylight.openflowplugin</groupId>
-      <artifactId>odl-openflowplugin-southbound</artifactId>
-      <version>${openflowplugin.version}</version>
-      <type>xml</type>
-      <classifier>features</classifier>
     </dependency>
   </dependencies>
 </project>
