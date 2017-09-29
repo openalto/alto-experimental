@@ -22,7 +22,11 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
   </bean>
 
   <bean id="bwmonitorService" class="org.opendaylight.alto.ext.impl.BwmonitorImpl">
-      <argument ref="dataBroker" />
+    <argument ref="dataBroker" />
+  </bean>
+
+  <bean id="bwFetchingService" class="org.opendaylight.alto.ext.impl.BwFetchingService">
+    <argument ref="dataBroker" />
   </bean>
 
   <odl:rpc-implementation ref="bwmonitorService" />

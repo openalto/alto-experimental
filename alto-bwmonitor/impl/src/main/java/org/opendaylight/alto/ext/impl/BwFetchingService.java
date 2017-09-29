@@ -17,12 +17,12 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nonnull;
 import java.util.Collection;
 
-public class BandwidthService implements DataTreeChangeListener<FlowCapableNodeConnectorStatisticsData>{
+public class BwFetchingService implements DataTreeChangeListener<FlowCapableNodeConnectorStatisticsData>{
     private DataBroker dataBroker;
-    private Logger LOG = LoggerFactory.getLogger(BandwidthService.class);
+    private Logger LOG = LoggerFactory.getLogger(BwFetchingService.class);
 
-    public BandwidthService(DataBroker dataBroker){
-        LOG.info("BandwidthService initialized");
+    public BwFetchingService(DataBroker dataBroker){
+        LOG.info("BwFetchingService initialized");
         this.dataBroker = dataBroker;
     }
 
