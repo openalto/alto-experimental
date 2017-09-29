@@ -32,6 +32,7 @@ and is available at http://www.eclipse.org/legal/epl-v10.html INTERNAL
     <yangtools.version>1.1.1-Carbon</yangtools.version>
     <dluxapps.version>0.5.1-Carbon</dluxapps.version>
     <configfile.directory>etc/opendaylight/karaf</configfile.directory>
+    <openflowplugin.version>0.4.1-Carbon</openflowplugin.version>
   </properties>
 
   <dependencyManagement>
@@ -113,6 +114,20 @@ and is available at http://www.eclipse.org/legal/epl-v10.html INTERNAL
       <groupId>${project.groupId}</groupId>
       <artifactId>alto-bwmonitor-cli</artifactId>
       <version>${project.version}</version>
+    </dependency>
+      <dependency>
+      <groupId>org.opendaylight.openflowplugin</groupId>
+      <artifactId>odl-openflowplugin-flow-services</artifactId>
+      <version>${openflowplugin.version}</version>
+      <type>xml</type>
+      <classifier>features</classifier>
+    </dependency>
+    <dependency>
+      <groupId>org.opendaylight.openflowplugin</groupId>
+      <artifactId>odl-openflowplugin-southbound</artifactId>
+      <version>${openflowplugin.version}</version>
+      <type>xml</type>
+      <classifier>features</classifier>
     </dependency>
   </dependencies>
 </project>

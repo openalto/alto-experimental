@@ -15,6 +15,8 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
   <repository>mvn:org.opendaylight.mdsal.model/features-mdsal-model/{{VERSION}}/xml/features</repository>
   <repository>mvn:org.opendaylight.netconf/features-restconf/{{VERSION}}/xml/features</repository>
   <repository>mvn:org.opendaylight.dluxapps/features-dluxapps/{{VERSION}}/xml/features</repository>
+  <repository>mvn:org.opendaylight.openflowplugin/features-openflowplugin/${openflowplugin.version}/xml/features</repository>
+
   <feature name='odl-alto-bwmonitor-api' version='${project.version}' description='OpenDaylight :: alto-bwmonitor :: api'>
     <feature version='${mdsal.model.version}'>odl-mdsal-models</feature>
     <bundle>mvn:org.opendaylight.alto.ext/alto-bwmonitor-api/{{VERSION}}</bundle>
@@ -22,6 +24,7 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
   <feature name='odl-alto-bwmonitor' version='${project.version}' description='OpenDaylight :: alto-bwmonitor'>
     <feature version='${mdsal.version}'>odl-mdsal-broker</feature>
     <feature version='${project.version}'>odl-alto-bwmonitor-api</feature>
+    <feature version="${openflowplugin.version}">odl-openflowplugin-flow-services</feature>
     <bundle>mvn:org.opendaylight.alto.ext/alto-bwmonitor-impl/{{VERSION}}</bundle>
   </feature>
   <feature name='odl-alto-bwmonitor-rest' version='${project.version}' description='OpenDaylight :: alto-bwmonitor :: REST'>

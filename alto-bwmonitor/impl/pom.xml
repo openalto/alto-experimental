@@ -12,6 +12,10 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
 
   <modelVersion>4.0.0</modelVersion>
 
+
+  <properties>
+      <openflowplugin.version>0.4.1-Carbon</openflowplugin.version>
+  </properties>
   <parent>
     <groupId>org.opendaylight.controller</groupId>
     <artifactId>config-parent</artifactId>
@@ -32,6 +36,12 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
       <groupId>${project.groupId}</groupId>
       <artifactId>alto-bwmonitor-api</artifactId>
       <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.opendaylight.openflowplugin.model</groupId>
+      <artifactId>model-flow-statistics</artifactId>
+      <version>${openflowplugin.version}</version>
     </dependency>
 
     <!-- Testing Dependencies -->
