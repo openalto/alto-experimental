@@ -29,5 +29,6 @@ install:
     fi;
     cp -n $HOME/.m2/settings.xml{,.orig} ;
     wget -q -O - https://raw.githubusercontent.com/opendaylight/odlparent/master/settings.xml > $HOME/.m2/settings.xml ;
+  - mvn install -nsu -Ptest -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 script:
-  - mvn clean install -q -Ptest
+  - mvn test -Ptest -B
