@@ -33,11 +33,13 @@ import java.util.concurrent.Future;
 
 public class BwmonitorImpl implements AltoBwmonitorService{
     private DataBroker db;
+    private BwFetchingService bwFetchingService;
     private static final Logger LOG = LoggerFactory.getLogger(BwmonitorImpl.class);
     private boolean dataTreeInitialized = false;
 
-    public BwmonitorImpl(DataBroker dataBroker ){
+    public BwmonitorImpl(DataBroker dataBroker, BwFetchingService bwFetchingService){
         this.db = dataBroker;
+        this.bwFetchingService = bwFetchingService;
     }
 
     private boolean initializeDataTree(){

@@ -27,6 +27,7 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
 
   <bean id="bwmonitorService" class="org.opendaylight.alto.ext.impl.BwmonitorImpl">
     <argument ref="dataBroker" />
+    <argument ref="bwFetchingService" />
   </bean>
 
 
