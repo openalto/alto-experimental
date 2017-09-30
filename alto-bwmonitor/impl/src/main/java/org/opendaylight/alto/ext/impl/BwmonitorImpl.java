@@ -15,13 +15,10 @@ import org.opendaylight.controller.md.sal.binding.api.DataBroker;
 import org.opendaylight.controller.md.sal.binding.api.ReadTransaction;
 import org.opendaylight.controller.md.sal.binding.api.WriteTransaction;
 import org.opendaylight.controller.md.sal.common.api.data.LogicalDatastoreType;
-import org.opendaylight.controller.md.sal.common.api.data.ReadFailedException;
 import org.opendaylight.controller.md.sal.common.api.data.TransactionCommitFailedException;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.bwmonitor.rev150105.*;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.bwmonitor.rev150105.speeds.Node;
-import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.bwmonitor.rev150105.speeds.NodeBuilder;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.bwmonitor.rev150105.speeds.NodeKey;
-import org.opendaylight.yangtools.yang.binding.DataObject;
 import org.opendaylight.yangtools.yang.binding.InstanceIdentifier;
 import org.opendaylight.yangtools.yang.common.RpcResult;
 import org.opendaylight.yangtools.yang.common.RpcResultBuilder;
@@ -60,35 +57,12 @@ public class BwmonitorImpl implements AltoBwmonitorService{
         return true;
     }
 
-    private boolean writeToSpeeds(BwmonitorRegisterInput input){
-        WriteTransaction transaction = db.newWriteOnlyTransaction();
-        InstanceIdentifier<Node> iid = toInstanceIdentifier(input);
-        Node node = new NodeBuilder().setPortId(input.getPortId()).setSpeed(0).build();
-        transaction.put(LogicalDatastoreType.OPERATIONAL, iid, node);
-        CheckedFuture<Void, TransactionCommitFailedException> future = transaction.submit();
-        Futures.addCallback(future, new LoggingFuturesCallBack<Void>("Failed to write node to speeds", LOG));
-
-        try {
-            future.checkedGet();
-        } catch (TransactionCommitFailedException e) {
-            LOG.error(e.getMessage());
-            return false;
-        }
-        return true;
-    }
-
-    private InstanceIdentifier<Node> toInstanceIdentifier(BwmonitorRegisterInput input){
-        InstanceIdentifier<Node> iid = InstanceIdentifier.create(Speeds.class)
-                .child(Node.class, new NodeKey(input.getPortId()));
-        return iid;
-    }
-
     @Override
     public Future<RpcResult<BwmonitorRegisterOutput>> bwmonitorRegister(BwmonitorRegisterInput input) {
         LOG.error("Get Input: " + input.getPortId());
         boolean success = true;
         if(!dataTreeInitialized) success = initializeDataTree();
-        if(success) success = writeToSpeeds(input);
+        if(success) success = BwmonitorUtils.writeToSpeeds(input.getPortId(), (long)0, (long)0, db);
         BwmonitorRegisterOutput output = new BwmonitorRegisterOutputBuilder()
                 .setResult(success).build();
         LOG.debug("Register node: " + input.getPortId());
@@ -104,15 +78,19 @@ public class BwmonitorImpl implements AltoBwmonitorService{
             Optional<Node> nodeData = transaction.read(LogicalDatastoreType.OPERATIONAL, iid).get();
             if(nodeData.isPresent()){
                 BwmonitorQueryOutput output = new BwmonitorQueryOutputBuilder()
-                        .setBandwidth(nodeData.get().getSpeed()).build();
-                LOG.debug("Query node: " + input.getPortId() + ", value: " + output.getBandwidth());
+                        .setRxSpeed(nodeData.get().getRxSpeed())
+                        .setTxSpeed(nodeData.get().getTxSpeed())
+                        .build();
+                LOG.debug("Query node: " + input.getPortId() + ", RxSpeed: " + output.getRxSpeed() + ", TxSpeed: " + output.getTxSpeed());
                 return RpcResultBuilder.success(output).buildFuture();
             }
         } catch (InterruptedException|ExecutionException e){
             LOG.error(e.getMessage());
         }
         BwmonitorQueryOutput output = new BwmonitorQueryOutputBuilder()
-                .setBandwidth(-1).build();
+                .setRxSpeed(-1)
+                .setTxSpeed(-1)
+                .build();
         return RpcResultBuilder.success(output).buildFuture();
     }
 

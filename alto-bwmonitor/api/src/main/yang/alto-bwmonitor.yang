@@ -12,7 +12,8 @@ module alto-bwmonitor {
             leaf portId { type string; }
         }
         output {
-            leaf bandwidth { type int32; }
+            leaf rxSpeed { type int32; }
+            leaf txSpeed { type int32; }
         }
     }
 
@@ -40,7 +41,9 @@ module alto-bwmonitor {
 
             leaf portId { type string; }
 
-            leaf speed { type int32; }
+            leaf rxSpeed { type int32; }
+
+            leaf txSpeed { type int32; }
         }
     }
 }
