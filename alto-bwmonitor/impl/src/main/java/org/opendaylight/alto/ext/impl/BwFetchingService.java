@@ -50,7 +50,6 @@ public class BwFetchingService implements DataTreeChangeListener<FlowCapableNode
      */
     private Map<String, Map<Double, Integer>> rxMap;
 
-
     private void syncToDataBroker(){
 
     }
@@ -72,6 +71,18 @@ public class BwFetchingService implements DataTreeChangeListener<FlowCapableNode
     public void addListeningPort(String portId){
         if(!this.rxMap.containsKey(portId)){
             rxMap.put(portId, new HashMap<>());
+            LOG.debug("Add listening port: " + portId);
+        } else {
+            LOG.debug("Try to add existent listening port: " + portId);
+        }
+    }
+
+    public void removeListeningPort(String portId) {
+        if(this.rxMap.containsKey(portId)){
+            rxMap.remove(portId);
+            LOG.debug("Remove listening port: " + portId);
+        } else {
+            LOG.debug("Try to remove nonexistent listening port: " + portId);
         }
     }
 }

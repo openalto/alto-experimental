@@ -9,22 +9,25 @@ module alto-bwmonitor {
 
     rpc bwmonitor-query {
         input {
-            leaf nodeId {
-                type string;
-            }
+            leaf portId { type string; }
         }
         output {
-            leaf bandwidth {
-                type int32;
-            }
+            leaf bandwidth { type int32; }
         }
     }
 
     rpc bwmonitor-register {
         input {
-            leaf nodeId {
-                type string;
-            }
+            leaf portId { type string; }
+        }
+        output {
+            leaf result { type boolean; }
+        }
+    }
+
+    rpc bwmonitor-deregister {
+        input {
+            leaf portId { type string; }
         }
         output {
             leaf result { type boolean; }
@@ -33,8 +36,9 @@ module alto-bwmonitor {
 
     container speeds {
         list node {
-            key nodeId;
-            leaf nodeId { type string; }
+            key portId;
+
+            leaf portId { type string; }
 
             leaf speed { type int32; }
         }

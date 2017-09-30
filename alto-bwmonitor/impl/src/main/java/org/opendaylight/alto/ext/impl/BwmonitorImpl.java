@@ -63,7 +63,7 @@ public class BwmonitorImpl implements AltoBwmonitorService{
     private boolean writeToSpeeds(BwmonitorRegisterInput input){
         WriteTransaction transaction = db.newWriteOnlyTransaction();
         InstanceIdentifier<Node> iid = toInstanceIdentifier(input);
-        Node node = new NodeBuilder().setNodeId(input.getNodeId()).setSpeed(0).build();
+        Node node = new NodeBuilder().setPortId(input.getPortId()).setSpeed(0).build();
         transaction.put(LogicalDatastoreType.OPERATIONAL, iid, node);
         CheckedFuture<Void, TransactionCommitFailedException> future = transaction.submit();
         Futures.addCallback(future, new LoggingFuturesCallBack<Void>("Failed to write node to speeds", LOG));
@@ -79,33 +79,33 @@ public class BwmonitorImpl implements AltoBwmonitorService{
 
     private InstanceIdentifier<Node> toInstanceIdentifier(BwmonitorRegisterInput input){
         InstanceIdentifier<Node> iid = InstanceIdentifier.create(Speeds.class)
-                .child(Node.class, new NodeKey(input.getNodeId()));
+                .child(Node.class, new NodeKey(input.getPortId()));
         return iid;
     }
 
     @Override
     public Future<RpcResult<BwmonitorRegisterOutput>> bwmonitorRegister(BwmonitorRegisterInput input) {
-        LOG.error("Get Input: " + input.getNodeId());
+        LOG.error("Get Input: " + input.getPortId());
         boolean success = true;
         if(!dataTreeInitialized) success = initializeDataTree();
         if(success) success = writeToSpeeds(input);
         BwmonitorRegisterOutput output = new BwmonitorRegisterOutputBuilder()
                 .setResult(success).build();
-        LOG.debug("Register node: " + input.getNodeId());
-        this.bwFetchingService.addListeningPort(input.getNodeId());
+        LOG.debug("Register node: " + input.getPortId());
+        this.bwFetchingService.addListeningPort(input.getPortId());
         return RpcResultBuilder.success(output).buildFuture();
     }
 
     @Override
     public Future<RpcResult<BwmonitorQueryOutput>> bwmonitorQuery(BwmonitorQueryInput input) {
         ReadTransaction transaction = db.newReadOnlyTransaction();
-        InstanceIdentifier<Node> iid = InstanceIdentifier.create(Speeds.class).child(Node.class, new NodeKey(input.getNodeId()));
+        InstanceIdentifier<Node> iid = InstanceIdentifier.create(Speeds.class).child(Node.class, new NodeKey(input.getPortId()));
         try {
             Optional<Node> nodeData = transaction.read(LogicalDatastoreType.OPERATIONAL, iid).get();
             if(nodeData.isPresent()){
                 BwmonitorQueryOutput output = new BwmonitorQueryOutputBuilder()
                         .setBandwidth(nodeData.get().getSpeed()).build();
-                LOG.debug("Query node: " + input.getNodeId() + ", value: " + output.getBandwidth());
+                LOG.debug("Query node: " + input.getPortId() + ", value: " + output.getBandwidth());
                 return RpcResultBuilder.success(output).buildFuture();
             }
         } catch (InterruptedException|ExecutionException e){
@@ -113,6 +113,16 @@ public class BwmonitorImpl implements AltoBwmonitorService{
         }
         BwmonitorQueryOutput output = new BwmonitorQueryOutputBuilder()
                 .setBandwidth(-1).build();
+        return RpcResultBuilder.success(output).buildFuture();
+    }
+
+    @Override
+    public Future<RpcResult<BwmonitorDeregisterOutput>> bwmonitorDeregister(BwmonitorDeregisterInput input) {
+        this.bwFetchingService.removeListeningPort(input.getPortId());
+        WriteTransaction transaction = db.newWriteOnlyTransaction();
+        InstanceIdentifier<Node> iid = InstanceIdentifier.create(Speeds.class).child(Node.class, new NodeKey(input.getPortId()));
+        transaction.delete(LogicalDatastoreType.OPERATIONAL, iid);
+        BwmonitorDeregisterOutput output = new BwmonitorDeregisterOutputBuilder().setResult(true).build();
         return RpcResultBuilder.success(output).buildFuture();
     }
 }
