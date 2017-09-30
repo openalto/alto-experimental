@@ -77,7 +77,7 @@ public class BwFetchingService implements DataTreeChangeListener<FlowCapableNode
 
     private void syncToDataBroker(String name, Statistic statistic){
         BwmonitorUtils.writeToSpeeds(name, statistic.rxSpeed, statistic.txSpeed, dataBroker);
-        LOG.info("Bwmonitor speeds updated: rxSpeed=" + statistic.rxSpeed + ", txSpeed=" + statistic.txSpeed);
+        LOG.debug("Bwmonitor speeds updated: rxSpeed=" + statistic.rxSpeed + ", txSpeed=" + statistic.txSpeed);
     }
 
     private void registerPortListener(){
@@ -186,7 +186,7 @@ public class BwFetchingService implements DataTreeChangeListener<FlowCapableNode
     public void addListeningPort(String portId){
         if(!this.statisticData.containsKey(portId)){
             statisticData.put(portId, new Statistic());
-            LOG.info("Add listening port: " + portId);
+            LOG.debug("Add listening port: " + portId);
         } else {
             LOG.debug("Try to add existent listening port: " + portId);
         }
@@ -195,7 +195,7 @@ public class BwFetchingService implements DataTreeChangeListener<FlowCapableNode
     public void removeListeningPort(String portId) {
         if(this.statisticData.containsKey(portId)){
             statisticData.remove(portId);
-            LOG.info("Remove listening port: " + portId);
+            LOG.debug("Remove listening port: " + portId);
         } else {
             LOG.debug("Try to remove nonexistent listening port: " + portId);
         }

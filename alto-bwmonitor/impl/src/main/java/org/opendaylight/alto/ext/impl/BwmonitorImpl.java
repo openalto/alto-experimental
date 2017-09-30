@@ -59,7 +59,7 @@ public class BwmonitorImpl implements AltoBwmonitorService{
 
     @Override
     public Future<RpcResult<BwmonitorRegisterOutput>> bwmonitorRegister(BwmonitorRegisterInput input) {
-        LOG.error("Get Input: " + input.getPortId());
+        LOG.debug("Get Input: " + input.getPortId());
         boolean success = true;
         if(!dataTreeInitialized) success = initializeDataTree();
         if(success) success = BwmonitorUtils.writeToSpeeds(input.getPortId(), (long)0, (long)0, db);
