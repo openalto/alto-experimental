@@ -16,7 +16,9 @@ module alto-pathmanager {
     import network-topology {
         prefix "network-topology";
     }
-
+    import opendaylight-match-types {
+        prefix "match";
+    }
 
     container path {
         list flow {
@@ -47,6 +49,22 @@ module alto-pathmanager {
         }
         leaf dstMac {
             type ietf-yang-types:mac-address;
+        }
+    }
+
+    rpc hello {
+        input {
+            leaf src {
+                type ietf-inet:ip-address;
+            }
+            leaf dst {
+                type ietf-inet:ip-address;
+            }
+        }
+        output {
+            leaf match {
+                type string;
+            }
         }
     }
 }

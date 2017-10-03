@@ -31,6 +31,7 @@ and is available at http://www.eclipse.org/legal/epl-v10.html INTERNAL
     <restconf.version>1.5.1-Carbon</restconf.version>
     <yangtools.version>1.1.1-Carbon</yangtools.version>
     <dluxapps.version>0.5.1-Carbon</dluxapps.version>
+    <openflow.plugin.version>0.6.0-SNAPSHOT</openflow.plugin.version>
     <configfile.directory>etc/opendaylight/karaf</configfile.directory>
   </properties>
 
@@ -114,5 +115,14 @@ and is available at http://www.eclipse.org/legal/epl-v10.html INTERNAL
       <artifactId>alto-pathmanager-cli</artifactId>
       <version>${project.version}</version>
     </dependency>
+    <dependency>
+      <groupId>org.opendaylight.openflowplugin</groupId>
+      <artifactId>features-openflowplugin</artifactId>
+      <classifier>features</classifier>
+      <version>${openflow.plugin.version}</version>
+      <type>xml</type>
+      <scope>runtime</scope>
+    </dependency>
+
   </dependencies>
 </project>
