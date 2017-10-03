@@ -17,31 +17,35 @@ import org.opendaylight.alto.ext.impl.PathManagerImpl;
 
 import org.opendaylight.alto.ext.impl.help.Header;
 import org.opendaylight.alto.ext.impl.help.MatchFields;
+
 public class PathManagerProvider {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PathManagerProvider.class);
+  private static final Logger LOG = LoggerFactory.getLogger(PathManagerProvider.class);
 
-    private final DataBroker dataBroker;
-    private final RpcProviderRegistry rpcProviderRegistry;
-    private RpcRegistration<AltoPathmanagerService> altoPathmanagerServiceRpcRegistration;
+  private final DataBroker dataBroker;
+  private final RpcProviderRegistry rpcProviderRegistry;
+  private RpcRegistration<AltoPathmanagerService> altoPathmanagerServiceRpcRegistration;
 
-    public PathManagerProvider(final DataBroker dataBroker, final RpcProviderRegistry rpcProviderRegistry) {
-        this.dataBroker = dataBroker;
-        this.rpcProviderRegistry = rpcProviderRegistry;
-    }
+  public PathManagerProvider(final DataBroker dataBroker,
+      final RpcProviderRegistry rpcProviderRegistry) {
+    this.dataBroker = dataBroker;
+    this.rpcProviderRegistry = rpcProviderRegistry;
+  }
 
-    /**
-     * Method called when the blueprint container is created.
-     */
-    public void init() {
-        LOG.info("PathManagerProvider Session Initiated");
-        altoPathmanagerServiceRpcRegistration = rpcProviderRegistry.addRpcImplementation(AltoPathmanagerService.class, new PathManagerImpl());
-    }
+  /**
+   * Method called when the blueprint container is created.
+   */
+  public void init() {
+    LOG.info("PathManagerProvider Session Initiated");
+    altoPathmanagerServiceRpcRegistration =
+        rpcProviderRegistry
+            .addRpcImplementation(AltoPathmanagerService.class, new PathManagerImpl());
+  }
 
-    /**
-     * Method called when the blueprint container is destroyed.
-     */
-    public void close() {
-        LOG.info("PathManagerProvider Closed");
-    }
+  /**
+   * Method called when the blueprint container is destroyed.
+   */
+  public void close() {
+    LOG.info("PathManagerProvider Closed");
+  }
 }

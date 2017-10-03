@@ -7,7 +7,6 @@
  */
 package org.opendaylight.alto.ext.impl.help;
 
-
 import com.google.common.base.Optional;
 import org.opendaylight.controller.md.sal.binding.api.DataBroker;
 import org.opendaylight.controller.md.sal.binding.api.ReadOnlyTransaction;
@@ -50,6 +49,4 @@ public class DataStoreHelper {
         }
         throw new ReadDataFailedException();
     }
-
-
 }

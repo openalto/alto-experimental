@@ -13,5 +13,4 @@ public class ReadDataFailedException extends Exception{
     public void printMessage(String message) {
         System.out.println(message);
     }
-
 }

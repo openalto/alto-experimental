@@ -31,7 +31,6 @@ module alto-pathmanager {
                 key link;
                 leaf link {
                     type network-topology:link-id;
-
                 }
             }
         }
