@@ -32,3 +32,6 @@ install:
   - mvn install -q -nsu -Ptest -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 script:
   - mvn test -Ptest -B
+  - mvn cobertura:cobertura
+after_success:
+  - bash <(curl -s https://codecov.io/bash)

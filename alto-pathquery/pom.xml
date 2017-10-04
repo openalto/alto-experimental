@@ -42,5 +42,12 @@ and is available at http://www.eclipse.org/legal/epl-v10.html INTERNAL
         <module>features</module>
       </modules>
     </profile>
+    <profile>
+      <id>test</id>
+      <modules>
+        <module>impl</module>
+        <module>features</module>
+      </modules>
+    </profile>
   </profiles>
 </project>

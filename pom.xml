@@ -27,5 +27,6 @@ and is available at http://www.eclipse.org/legal/epl-v10.html INTERNAL
   <modules>
     <module>alto-bwmonitor</module>
     <module>alto-pathmanager</module>
+    <module>alto-pathquery</module>
   </modules>
 </project>
