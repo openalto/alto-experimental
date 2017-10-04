@@ -8,19 +8,12 @@
 
 package org.opendaylight.alto.pathquery;
 
-public class FlowDesc {
-    public String src;
+import java.util.List;
 
-    public String dst;
+public class DomainPath {
+    public List<NextHop> path;
 
-    public String ingress;
-
-    public FlowDesc() {
-    }
-
-    public FlowDesc(String src, String dst, String ingress) {
-        this.src = src;
-        this.dst = dst;
-        this.ingress = ingress;
+    public DomainPath(List<NextHop> path) {
+        this.path = path;
     }
 }

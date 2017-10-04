@@ -10,15 +10,18 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
 <blueprint xmlns="http://www.osgi.org/xmlns/blueprint/v1.0.0"
            xmlns:odl="http://opendaylight.org/xmlns/blueprint/v1.0.0"
            odl:use-default-for-reference-types="true">
-  <!--
   <bean id="provider"
-        class="org.opendaylight.alto.core.northbound.impl.AltoNorthboundProvider"
+        class="org.opendaylight.alto.pathquery.test.StaticPathManager"
         init-method="init" destroy-method="close">
   </bean>
+
+  <!--
+  <reference id="dataBroker"
+    interface="org.opendaylight.controller.md.sal.binding.api.DataBroker"
+    odl:type="default" />
 
   <service ref="provider"
            interface="org.opendaylight.alto.core.northbound.api.AltoNorthboundRouter"
            odl:type="default"/>
-
   -->
 </blueprint>

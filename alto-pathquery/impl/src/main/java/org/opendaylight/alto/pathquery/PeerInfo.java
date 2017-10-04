@@ -9,7 +9,15 @@
 package org.opendaylight.alto.pathquery;
 
 public class PeerInfo {
+    public String ingress;
+
     public String id;
 
     public String url;
+
+    public PeerInfo(String id, String url, String ingress) {
+        this.id = id;
+        this.url = url;
+        this.ingress = ingress;
+    }
 }

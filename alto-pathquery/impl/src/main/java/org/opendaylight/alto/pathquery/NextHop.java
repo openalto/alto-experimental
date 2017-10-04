@@ -8,19 +8,17 @@
 
 package org.opendaylight.alto.pathquery;
 
-public class FlowDesc {
-    public String src;
+public class NextHop {
 
-    public String dst;
+    public String domain;
 
     public String ingress;
 
-    public FlowDesc() {
+    public NextHop() {
     }
 
-    public FlowDesc(String src, String dst, String ingress) {
-        this.src = src;
-        this.dst = dst;
+    public NextHop(String domain, String ingress) {
+        this.domain = domain;
         this.ingress = ingress;
     }
 }

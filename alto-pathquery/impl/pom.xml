@@ -79,6 +79,10 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
       <artifactId>jersey-server</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.sun.jersey</groupId>
+      <artifactId>jersey-client</artifactId>
+    </dependency>
+    <dependency>
       <groupId>javax.servlet</groupId>
       <artifactId>javax.servlet-api</artifactId>
     </dependency>
