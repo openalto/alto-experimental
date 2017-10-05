@@ -5,6 +5,9 @@ addons:
     organization: "openalto-github"
     token:
       secure: "${SONAR_TOKEN}"
+    branches:
+    - master
+    - odl-carbon-sr1
 
 cache:
   directories:
@@ -36,7 +39,7 @@ install:
     fi;
     cp -n $HOME/.m2/settings.xml{,.orig} ;
     wget -q -O - https://raw.githubusercontent.com/opendaylight/odlparent/master/settings.xml > $HOME/.m2/settings.xml ;
-  - mvn org.jacoco:jacoco-maven-plugin:prepare-agent install -q -nsu -Ptest -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+  - mvn org.jacoco:jacoco-maven-plugin:prepare-agent install -q -nsu -Ptest -DskipTests=true -Dmaven.javadoc.skip=true -B -V -T2
 script:
   - mvn test -nsu -Ptest -B
   - mvn sonar:sonar -nsu
