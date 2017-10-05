@@ -1,8 +1,15 @@
 language: java
 
+addons:
+  sonarcloud:
+    organization: "openalto-github"
+    token:
+      secure: "${SONAR_TOKEN}"
+
 cache:
   directories:
   - $HOME/.m2/repository
+  - $HOME/.sonar/cache
 before_cache:
   - rm -rf $HOME/.m2/repository/org/opendaylight/alto
 
@@ -29,9 +36,9 @@ install:
     fi;
     cp -n $HOME/.m2/settings.xml{,.orig} ;
     wget -q -O - https://raw.githubusercontent.com/opendaylight/odlparent/master/settings.xml > $HOME/.m2/settings.xml ;
-  - mvn install -q -nsu -Ptest -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+  - mvn org.jacoco:jacoco-maven-plugin:prepare-agent install -q -nsu -Ptest -DskipTests=true -Dmaven.javadoc.skip=true -B -V
 script:
-  - mvn test -Ptest -B
-  - mvn cobertura:cobertura
+  - mvn test -nsu -Ptest -B
+  - mvn sonar:sonar -nsu
 after_success:
   - bash <(curl -s https://codecov.io/bash)
