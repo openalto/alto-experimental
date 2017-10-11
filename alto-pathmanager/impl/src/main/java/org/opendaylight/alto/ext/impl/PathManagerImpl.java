@@ -7,26 +7,20 @@
  */
 package org.opendaylight.alto.ext.impl;
 
-import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.pathmanager.rev150105.AltoPathmanagerService;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.alto.ext.pathmanager.rev150105.AltoPathmanagerService;
 import org.opendaylight.yangtools.yang.common.RpcResult;
 import org.opendaylight.yangtools.yang.common.RpcResultBuilder;
-import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.inventory.rev130819.FlowCapableNode;
-import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.pathmanager.rev150105.HelloInput;
-import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.pathmanager.rev150105.HelloInputBuilder;
-import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.pathmanager.rev150105.HelloOutput;
-import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.pathmanager.rev150105.HelloOutputBuilder;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.alto.ext.pathmanager.rev150105.HelloInput;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.alto.ext.pathmanager.rev150105.HelloOutput;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.alto.ext.pathmanager.rev150105.HelloOutputBuilder;
 import java.util.concurrent.Future;
-import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.inventory.rev130819.tables.Table;
-import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.inventory.rev130819.tables.table.Flow;
 
-public class PathManagerImpl implements AltoPathmanagerService{
+public class PathManagerImpl implements AltoPathmanagerService {
 
-//    private FlowCapableNode flowCapableNode
-    @Override
-    public Future<RpcResult<HelloOutput>> hello (HelloInput input ) {
-//        List<Flow> flows =
-        HelloOutputBuilder helloOutputBuilder = new HelloOutputBuilder();
-        helloOutputBuilder.setMatch("yes");
-        return RpcResultBuilder.success(helloOutputBuilder.build()).buildFuture();
-    }
+  @Override
+  public Future<RpcResult<HelloOutput>> hello(HelloInput input) {
+    HelloOutputBuilder helloOutputBuilder = new HelloOutputBuilder();
+    helloOutputBuilder.setMatch("yes");
+    return RpcResultBuilder.success(helloOutputBuilder.build()).buildFuture();
+  }
 }

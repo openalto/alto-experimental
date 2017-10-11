@@ -1,6 +1,6 @@
 module alto-pathmanager {
     yang-version 1;
-    namespace "urn:opendaylight:params:xml:ns:yang:alto-pathmanager";
+    namespace "urn:opendaylight:alto:ext:pathmanager";
     prefix "alto-pathmanager";
 
     revision "2015-01-05" {
@@ -20,33 +20,53 @@ module alto-pathmanager {
         prefix "match";
     }
 
-    container path {
-        list flow {
-            key id;
-            leaf id {
-                type int32;
-            }
-            uses flow;
-            list links {
-                key link;
-                leaf link {
-                    type network-topology:link-id;
-                }
+    typedef protocol {
+        type enumeration {
+            enum tcp;
+            enum udp;
+            enum sctp;
+        }
+    }
+
+    list path {
+        key id;
+        leaf id {
+            type int32;
+        }
+
+        container flow-desc {
+            uses alto-flow-desc;
+        }
+
+        list links {
+            key link;
+            leaf link {
+                type network-topology:link-id;
             }
         }
     }
 
-    grouping flow {
-        leaf srcIP {
-            type ietf-inet:ip-address;
+    grouping alto-flow-desc {
+        leaf src-ip {
+            type ietf-inet:ipv4-prefix;
         }
-        leaf dstIP {
-            type ietf-inet:ip-address;
+        leaf dst-ip {
+            type ietf-inet:ipv4-prefix;
+            mandatory true;
         }
-        leaf srcMac {
+        leaf src-port {
+            type ietf-inet:port-number;
+        }
+        leaf dst-port {
+            type ietf-inet:port-number;
+        }
+        leaf protocol {
+            type protocol;
+        }
+        leaf src-mac {
             type ietf-yang-types:mac-address;
         }
-        leaf dstMac {
+        leaf dst-mac {
             type ietf-yang-types:mac-address;
         }
     }
