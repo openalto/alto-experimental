@@ -39,9 +39,8 @@ install:
     fi;
     cp -n $HOME/.m2/settings.xml{,.orig} ;
     wget -q -O - https://raw.githubusercontent.com/opendaylight/odlparent/master/settings.xml > $HOME/.m2/settings.xml ;
-  - mvn org.jacoco:jacoco-maven-plugin:prepare-agent install -q -nsu -Ptest -DskipTests=true -Dmaven.javadoc.skip=true -B -V -T2
 script:
-  - mvn test -nsu -Ptest -B
+  - mvn org.jacoco:jacoco-maven-plugin:prepare-agent install -q -nsu -Ptest -B -V
   - mvn sonar:sonar -nsu
 after_success:
   - bash <(curl -s https://codecov.io/bash)
