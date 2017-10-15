@@ -41,6 +41,10 @@ install:
     wget -q -O - https://raw.githubusercontent.com/opendaylight/odlparent/master/settings.xml > $HOME/.m2/settings.xml ;
 script:
   - mvn org.jacoco:jacoco-maven-plugin:prepare-agent install -q -nsu -Ptest -B -V
-  - mvn sonar:sonar -nsu
+  - if [[ -n "${TRAVIS_PULL_REQUEST_SLUG}" && "${TRAVIS_PULL_REQUEST_SLUG}" != "${TRAVIS_REPO_SLUG}" ]]; then
+      echo "The pull request from ${TRAVIS_PULL_REQUEST_SLUG} is an EXTERNAL pull request. Skip sonar analysis.";
+    else
+      mvn sonar:sonar -nsu;
+    fi
 after_success:
   - bash <(curl -s https://codecov.io/bash)
