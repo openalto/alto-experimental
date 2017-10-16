@@ -7,9 +7,13 @@
  */
 package org.opendaylight.alto.ext.helper;
 
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.opendaylight.yang.gen.v1.urn.ietf.params.xml.ns.yang.ietf.inet.types.rev130715.PortNumber;
 import org.opendaylight.yang.gen.v1.urn.ietf.params.xml.ns.yang.ietf.inet.types.rev130715.Uri;
+import org.opendaylight.yang.gen.v1.urn.ietf.params.xml.ns.yang.ietf.yang.types.rev130715.MacAddress;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.action.types.rev131112.action.action.OutputActionCase;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.action.types.rev131112.action.list.Action;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.alto.ext.pathmanager.rev150105.Protocol;
@@ -25,6 +29,7 @@ import org.opendaylight.yang.gen.v1.urn.opendaylight.model.match.types.rev131026
 import org.opendaylight.yang.gen.v1.urn.opendaylight.model.match.types.rev131026.match.layer._4.match.SctpMatch;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.model.match.types.rev131026.match.layer._4.match.TcpMatch;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.model.match.types.rev131026.match.layer._4.match.UdpMatch;
+import org.opendaylight.yang.gen.v1.urn.ietf.params.xml.ns.yang.ietf.inet.types.rev130715.Ipv4Prefix;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,6 +40,13 @@ public class PathManagerHelper {
   public static FlowDesc toAltoFlowDesc(Match match) {
     FlowDescBuilder builder = new FlowDescBuilder();
     if (match != null) {
+      if (match.getEthernetMatch() != null) {
+        if (match.getEthernetMatch().getEthernetSource() != null)
+          builder.setSrcMac(match.getEthernetMatch().getEthernetSource().getAddress());
+        if (match.getEthernetMatch().getEthernetDestination() != null)
+          builder.setDstMac(match.getEthernetMatch().getEthernetDestination().getAddress());
+      }
+
       if (match.getLayer3Match() != null) {
         if (match.getLayer3Match() instanceof Ipv4Match) {
           Ipv4Match ipv4Match = (Ipv4Match) match.getLayer3Match();
@@ -114,4 +126,58 @@ public class PathManagerHelper {
     }
     return isNullableObjectDiff(before, after);
   }
+
+
+
+  public static boolean isFlowMatch(FlowDesc rule, FlowDesc test) {
+    return (rule == null) ||
+            ((iPv4PrefixMatch(rule.getSrcIp(),test.getSrcIp()))
+                    && (iPv4PrefixMatch(rule.getDstIp(),test.getDstIp()))
+                    && (protocolMatch(rule.getProtocol(),test.getProtocol()))
+                    && (portNumberMatch(rule.getSrcPort(),test.getSrcPort()))
+                    && (portNumberMatch(rule.getDstPort(),test.getDstPort()))
+                    && (macAddressMatch(rule.getSrcMac(),test.getSrcMac()))
+                    && (macAddressMatch(rule.getDstMac(),test.getDstMac()))
+            );
+
+  }
+  private static boolean iPv4PrefixMatch(Ipv4Prefix rule, Ipv4Prefix test) {
+    int ruleIPv4Address, ruleIPv4Mask, testIPv4Address, testIPv4Mask;
+    if(rule == null)
+      return true;
+    try {
+      ruleIPv4Address = IPPrefixHelper.iPv4PrefixToIntIPv4Address(rule);
+      ruleIPv4Mask = IPPrefixHelper.ipv4PrefixToIntIPv4Mask(rule);
+
+    } catch (UnknownHostException e) {
+      LOG.error("Unknown Host" + rule.getValue(),e);
+      return false;
+    }
+    try {
+      testIPv4Address = IPPrefixHelper.iPv4PrefixToIntIPv4Address(test);
+      testIPv4Mask = IPPrefixHelper.ipv4PrefixToIntIPv4Mask(test);
+    } catch (UnknownHostException e) {
+      LOG.error("Unknown Host" + test.getValue(), e);
+      return false;
+    }
+    if(ruleIPv4Mask <= testIPv4Mask) {
+      if((testIPv4Address & ruleIPv4Mask) == (ruleIPv4Address & ruleIPv4Mask))
+        return true;
+      return false;
+    }
+    return false;
+  }
+  private static boolean portNumberMatch(PortNumber rule, PortNumber test) {
+    return (rule == null) ||
+            (rule.equals(test));
+  }
+  private static boolean macAddressMatch(MacAddress rule, MacAddress test) {
+    return (rule == null) ||
+            (rule.equals(test));
+  }
+  private static boolean protocolMatch(Protocol rule, Protocol test) {
+    return (rule == null) ||
+            (rule.equals(test));
+  }
 }
+
