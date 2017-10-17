@@ -16,6 +16,7 @@ import org.opendaylight.controller.md.sal.binding.api.DataTreeChangeListener;
 import org.opendaylight.controller.md.sal.binding.api.DataTreeModification;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.inventory.rev130819.tables.Table;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.inventory.rev130819.tables.table.Flow;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.nodes.Node;
 import org.opendaylight.yangtools.yang.binding.InstanceIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,15 +27,17 @@ public class PathListener implements DataTreeChangeListener<Flow> {
   private static final Short DEFAULT_TABLE_ID = 0;
 
   private final DataBroker dataBroker;
+  private final PathManagerUpdater updater;
 
   public PathListener(DataBroker dataBroker) {
     this.dataBroker = dataBroker;
+    updater = new PathManagerUpdater(dataBroker);
   }
 
   @Override
   public void onDataTreeChanged(@Nonnull Collection<DataTreeModification<Flow>> changes) {
     if (changes == null) {
-      // This line should never be called since @Nonnull.
+      LOG.info("This line should never be reached because of @Nonnull.");
       return;
     }
     for (DataTreeModification<Flow> change : changes) {
@@ -60,36 +63,31 @@ public class PathListener implements DataTreeChangeListener<Flow> {
 
   protected void onFlowRuleCreated(InstanceIdentifier<Flow> iid, Flow dataBefore, Flow dataAfter) {
     if (dataBefore == null) {
-      newFlowRule(dataAfter);
+      LOG.debug("Flow rule is created: {}.", iid);
+      updater.newFlowRule(iid.firstKeyOf(Node.class).getId().getValue(), dataAfter);
       return;
     } else if (PathManagerHelper.isFlowRuleDiff(dataBefore, dataAfter)) {
-      updateFlowRule(dataBefore, dataAfter);
+      LOG.debug("Flow rule changed in WRITE mod: {}.", iid);
+      updater.updateFlowRule(iid.firstKeyOf(Node.class).getId().getValue(), dataBefore, dataAfter);
+      return;
     }
-    // No changes on this flow rule
+    LOG.debug("No change on this flow rule: {}.", iid);
     return;
   }
 
   protected void onFlowRuleUpdated(InstanceIdentifier<Flow> iid, Flow dataBefore, Flow dataAfter) {
     if (PathManagerHelper.isFlowRuleDiff(dataBefore, dataAfter)) {
-      updateFlowRule(dataBefore, dataAfter);
+      LOG.debug("Flow rule changed in SUBTREE_MODIFIED mod: {}.", iid);
+      updater.updateFlowRule(iid.firstKeyOf(Node.class).getId().getValue(), dataBefore, dataAfter);
+      return;
     }
+    LOG.debug("No change on this flow rule: {}.", iid);
     return;
   }
 
   protected void onFlowRuleDeleted(InstanceIdentifier<Flow> iid, Flow dataBefore) {
-    deleteFlowRule(dataBefore);
+    LOG.debug("Flow rule is deleted: {}.", iid);
+    updater.deleteFlowRule(iid.firstKeyOf(Node.class).getId().getValue(), dataBefore);
     return;
-  }
-
-  protected void newFlowRule(Flow flow) {
-    LOG.info("Flow rule created:\n{}.", flow);
-  }
-
-  protected void updateFlowRule(Flow before, Flow after) {
-    LOG.info("Flow rule updated:\nFrom: {};\nTo: {}.", before.toString(), after.toString());
-  }
-
-  protected void deleteFlowRule(Flow flow) {
-    LOG.info("Flow rule deleted:\n{}.", flow);
   }
 }

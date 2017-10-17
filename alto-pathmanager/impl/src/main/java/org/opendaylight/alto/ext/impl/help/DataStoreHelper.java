@@ -15,38 +15,52 @@ import org.opendaylight.yangtools.yang.binding.DataObject;
 import org.opendaylight.yangtools.yang.binding.InstanceIdentifier;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DataStoreHelper {
 
-    /**
-     * @param dataBroker
-     * @param iid
-     * @param <T>
-     * @return The operational data of iid
-     * @throws ReadDataFailedException
-     */
-    public static <T extends DataObject> T readOperational(
-            DataBroker dataBroker, InstanceIdentifier<T> iid) throws ReadDataFailedException {
-        T data = readFromDataStore(dataBroker, iid, LogicalDatastoreType.OPERATIONAL);
-        return data;
+  private static final Logger LOG = LoggerFactory.getLogger(DataStoreHelper.class);
+
+  private DataStoreHelper() {
+    throw new IllegalStateException("Utility class");
+  }
+
+  /**
+   * @return The operational data of iid
+   */
+  public static <T extends DataObject> T readOperational(
+      DataBroker dataBroker, InstanceIdentifier<T> iid) throws ReadDataFailedException {
+    return readFromDataStore(dataBroker, iid, LogicalDatastoreType.OPERATIONAL);
+  }
+
+  public static <T extends DataObject> T readFromDataStore(
+      DataBroker dataBroker, InstanceIdentifier<T> iid, LogicalDatastoreType type)
+      throws ReadDataFailedException {
+    if (dataBroker == null) {
+      throw new ReadDataFailedException("No DataBroker in the context.");
     }
 
-    public static <T extends DataObject> T readFromDataStore(
-            DataBroker dataBroker, InstanceIdentifier<T> iid, LogicalDatastoreType type) throws ReadDataFailedException {
-        ReadOnlyTransaction tx = dataBroker.newReadOnlyTransaction();
-        Future<Optional<T>> future = tx.read(type, iid);
-        try {
-            if (future != null) {
-                Optional<T> optional = future.get();
-                if (optional.isPresent()) {
-                    return optional.get();
-                }
-            }
-        } catch (InterruptedException | ExecutionException e) {
-            e.printStackTrace();
-        } finally {
-            tx.close();
+    ReadOnlyTransaction rx = dataBroker.newReadOnlyTransaction();
+
+    try {
+      Future<Optional<T>> future = rx.read(type, iid);
+      if (future != null) {
+        Optional<T> optional = future.get();
+        if (optional.isPresent()) {
+          return optional.get();
         }
-        throw new ReadDataFailedException();
+      }
+    } catch (InterruptedException | ExecutionException e) {
+      LOG.error("Data read is interrupted: ", e);
+    } catch (NullPointerException e) {
+      LOG.error("Cannot start a new read transaction: ", e);
+    } finally {
+      if (rx != null) {
+        rx.close();
+      }
     }
+
+    throw new ReadDataFailedException("Maybe data read is interrupted.");
+  }
 }

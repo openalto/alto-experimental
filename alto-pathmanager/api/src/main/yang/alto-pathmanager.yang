@@ -28,20 +28,22 @@ module alto-pathmanager {
         }
     }
 
-    list path {
-        key id;
-        leaf id {
-            type int32;
-        }
+    container path-manager {
+        list path {
+            key id;
+            leaf id {
+                type int32;
+            }
 
-        container flow-desc {
-            uses alto-flow-desc;
-        }
+            container flow-desc {
+                uses alto-flow-desc;
+            }
 
-        list links {
-            key link;
-            leaf link {
-                type network-topology:link-id;
+            list links {
+                key link;
+                leaf link {
+                    type network-topology:link-id;
+                }
             }
         }
     }

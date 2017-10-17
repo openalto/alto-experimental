@@ -7,9 +7,13 @@
  */
 package org.opendaylight.alto.ext.impl;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import com.google.common.base.Optional;
+import com.google.common.util.concurrent.CheckedFuture;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -23,15 +27,20 @@ import org.opendaylight.controller.md.sal.binding.api.DataObjectModification;
 import org.opendaylight.controller.md.sal.binding.api.DataObjectModification.ModificationType;
 import org.opendaylight.controller.md.sal.binding.api.DataTreeIdentifier;
 import org.opendaylight.controller.md.sal.binding.api.DataTreeModification;
+import org.opendaylight.controller.md.sal.binding.api.ReadOnlyTransaction;
 import org.opendaylight.controller.md.sal.common.api.data.LogicalDatastoreType;
+import org.opendaylight.controller.md.sal.common.api.data.ReadFailedException;
 import org.opendaylight.yang.gen.v1.urn.ietf.params.xml.ns.yang.ietf.inet.types.rev130715.Ipv4Prefix;
 import org.opendaylight.yang.gen.v1.urn.ietf.params.xml.ns.yang.ietf.inet.types.rev130715.Uri;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.action.types.rev131112.action.action.OutputActionCaseBuilder;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.action.types.rev131112.action.action.output.action._case.OutputActionBuilder;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.action.types.rev131112.action.list.ActionBuilder;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.alto.ext.pathmanager.rev150105.PathManager;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.inventory.rev130819.FlowCapableNode;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.inventory.rev130819.FlowCapableNodeBuilder;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.inventory.rev130819.FlowId;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.inventory.rev130819.tables.Table;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.inventory.rev130819.tables.TableBuilder;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.inventory.rev130819.tables.TableKey;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.inventory.rev130819.tables.table.Flow;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.inventory.rev130819.tables.table.FlowBuilder;
@@ -41,8 +50,12 @@ import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.types.rev131026.flow.M
 import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.types.rev131026.instruction.instruction.ApplyActionsCaseBuilder;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.types.rev131026.instruction.instruction.apply.actions._case.ApplyActionsBuilder;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.types.rev131026.instruction.list.InstructionBuilder;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.NodeId;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.Nodes;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.NodesBuilder;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.nodes.Node;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.nodes.NodeBuilder;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.nodes.NodeKey;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.model.match.types.rev131026.match.layer._3.match.Ipv4MatchBuilder;
 import org.opendaylight.yangtools.yang.binding.InstanceIdentifier;
 
@@ -55,24 +68,65 @@ import org.opendaylight.yangtools.yang.binding.InstanceIdentifier;
  */
 public class PathListenerTest {
 
+  private static final Uri DEFAULT_NODE_ID = new Uri("openflow:default");
   private static final Short DEFAULT_TABLE_ID = 0;
   private static final Uri DEFAULT_FLOW_ID = new Uri("flow:default");
+  private static final InstanceIdentifier<PathManager> PATH_MANAGER_IID = InstanceIdentifier
+      .create(PathManager.class);
+  private static final InstanceIdentifier<Nodes> INV_NODE_IID = InstanceIdentifier
+      .create(Nodes.class);
 
-  private final DataBroker dataBroker = mock(DataBroker.class);
-  private PathListener pathListener;
+  private PathListener pathListener1;
+  private PathListener pathListener2;
 
   @Before
   public void before() throws Exception {
-    pathListener = new PathListener(dataBroker);
+    DataBroker dataBroker1 = mock(DataBroker.class);
+    ReadOnlyTransaction rx1 = mock(ReadOnlyTransaction.class);
+    when(rx1.read(any(LogicalDatastoreType.class), any(InstanceIdentifier.class)))
+        .thenReturn(null);
+    when(dataBroker1.newReadOnlyTransaction()).thenReturn(rx1);
+    pathListener1 = new PathListener(dataBroker1);
+
+    DataBroker dataBroker2 = mock(DataBroker.class);
+    ReadOnlyTransaction rx2 = mock(ReadOnlyTransaction.class);
+    CheckedFuture<Optional<Nodes>, ReadFailedException> future2 = mock(CheckedFuture.class);
+    Optional<Nodes> optional = mock(Optional.class);
+    when(optional.isPresent()).thenReturn(true);
+    when(optional.get()).thenReturn(new NodesBuilder()
+        .setNode(Arrays.asList(
+            new NodeBuilder()
+                .setId(new NodeId(new Uri("openflow1")))
+                .addAugmentation(
+                    FlowCapableNode.class,
+                    new FlowCapableNodeBuilder()
+                        .setTable(Arrays.asList(
+                            new TableBuilder()
+                                .setId((short) 0)
+                                .setFlow(Arrays.asList(
+                                    getIpv4OutputFlow(new FlowId(new Uri(getRandomId("flow")))),
+                                    getIpv4DropFlow(new FlowId(new Uri(getRandomId("flow"))))))
+                                .build()))
+                        .build())
+                .build()))
+        .build());
+    when(future2.get()).thenReturn(optional);
+    when(rx2.read(any(LogicalDatastoreType.class), eq(INV_NODE_IID)))
+        .thenReturn(future2);
+    when(rx2.read(any(LogicalDatastoreType.class), eq(PATH_MANAGER_IID)))
+        .thenReturn(null);
+    when(dataBroker2.newReadOnlyTransaction()).thenReturn(rx2);
+    pathListener2 = new PathListener(dataBroker2);
   }
 
   @After
   public void after() throws Exception {
   }
 
-  private DataTreeIdentifier<Flow> getMockRootPath(TableKey tableKey, FlowKey flowKey) {
+  private DataTreeIdentifier<Flow> getMockRootPath(NodeKey nodeKey, TableKey tableKey,
+      FlowKey flowKey) {
     InstanceIdentifier<Flow> iid = InstanceIdentifier
-        .builder(Nodes.class).child(Node.class)
+        .builder(Nodes.class).child(Node.class, nodeKey)
         .augmentation(FlowCapableNode.class).child(Table.class, tableKey)
         .child(Flow.class, flowKey).build();
     DataTreeIdentifier<Flow> path = new DataTreeIdentifier<>(LogicalDatastoreType.OPERATIONAL, iid);
@@ -134,7 +188,7 @@ public class PathListenerTest {
   public void testNullValueChanged() throws Exception {
     try {
       Collection<DataTreeModification<Flow>> nullChanges = null;
-      pathListener.onDataTreeChanged(nullChanges);
+      pathListener1.onDataTreeChanged(nullChanges);
     } catch (Exception e) {
       Assert.assertEquals(IllegalArgumentException.class, e.getClass());
     }
@@ -144,7 +198,7 @@ public class PathListenerTest {
     DataTreeModification<Flow> change0 = null;
     changes.add(change0);
 
-    pathListener.onDataTreeChanged(changes);
+    pathListener1.onDataTreeChanged(changes);
   }
 
   /**
@@ -155,14 +209,14 @@ public class PathListenerTest {
     Collection<DataTreeModification<Flow>> changes = new ArrayList<>();
 
     DataTreeModification<Flow> change0 = mock(DataTreeModification.class);
-    when(change0.getRootPath()).thenReturn(getMockRootPath(new TableKey(DEFAULT_TABLE_ID),
-        new FlowKey(new FlowId(DEFAULT_FLOW_ID))));
+    when(change0.getRootPath()).thenReturn(getMockRootPath(new NodeKey(new NodeId(DEFAULT_NODE_ID)),
+        new TableKey(DEFAULT_TABLE_ID), new FlowKey(new FlowId(DEFAULT_FLOW_ID))));
     DataObjectModification<Flow> rootNode = getMockRootNode(ModificationType.WRITE, null,
         getIpv4DropFlow(new FlowId(DEFAULT_FLOW_ID)));
     when(change0.getRootNode()).thenReturn(rootNode);
     changes.add(change0);
 
-    pathListener.onDataTreeChanged(changes);
+    pathListener1.onDataTreeChanged(changes);
   }
 
   /**
@@ -173,24 +227,26 @@ public class PathListenerTest {
     Collection<DataTreeModification<Flow>> changes = new ArrayList<>();
 
     DataTreeModification<Flow> change0 = mock(DataTreeModification.class);
-    FlowId id0 = new FlowId(new Uri(getRandomId("flow")));
-    when(change0.getRootPath()).thenReturn(getMockRootPath(new TableKey(DEFAULT_TABLE_ID),
-        new FlowKey(id0)));
-    DataObjectModification<Flow> rootNode0 =getMockRootNode(ModificationType.WRITE,
-        getIpv4DropFlow(id0), getIpv4OutputFlow(id0));
+    NodeId nodeId0 = new NodeId(new Uri(getRandomId("openflow")));
+    FlowId flowId0 = new FlowId(new Uri(getRandomId("flow")));
+    when(change0.getRootPath()).thenReturn(getMockRootPath(new NodeKey(nodeId0),
+        new TableKey(DEFAULT_TABLE_ID), new FlowKey(flowId0)));
+    DataObjectModification<Flow> rootNode0 = getMockRootNode(ModificationType.WRITE,
+        getIpv4DropFlow(flowId0), getIpv4OutputFlow(flowId0));
     when(change0.getRootNode()).thenReturn(rootNode0);
     changes.add(change0);
 
     DataTreeModification<Flow> change1 = mock(DataTreeModification.class);
-    FlowId id1 = new FlowId(new Uri(getRandomId("flow")));
-    when(change1.getRootPath()).thenReturn(getMockRootPath(new TableKey(DEFAULT_TABLE_ID),
-        new FlowKey(id1)));
-    DataObjectModification<Flow> rootNode1 =getMockRootNode(ModificationType.SUBTREE_MODIFIED,
-        getIpv4OutputFlow(id1), getIpv4DropFlow(id1));
+    NodeId nodeId1 = new NodeId(new Uri(getRandomId("openflow")));
+    FlowId flowId1 = new FlowId(new Uri(getRandomId("flow")));
+    when(change1.getRootPath()).thenReturn(getMockRootPath(new NodeKey(nodeId1),
+        new TableKey(DEFAULT_TABLE_ID), new FlowKey(flowId1)));
+    DataObjectModification<Flow> rootNode1 = getMockRootNode(ModificationType.SUBTREE_MODIFIED,
+        getIpv4OutputFlow(flowId1), getIpv4DropFlow(flowId1));
     when(change1.getRootNode()).thenReturn(rootNode1);
     changes.add(change1);
 
-    pathListener.onDataTreeChanged(changes);
+    pathListener1.onDataTreeChanged(changes);
   }
 
   /**
@@ -201,15 +257,16 @@ public class PathListenerTest {
     Collection<DataTreeModification<Flow>> changes = new ArrayList<>();
 
     DataTreeModification<Flow> change0 = mock(DataTreeModification.class);
-    FlowId id0 = new FlowId(new Uri(getRandomId("flow")));
-    when(change0.getRootPath()).thenReturn(getMockRootPath(new TableKey(DEFAULT_TABLE_ID),
-        new FlowKey(id0)));
-    DataObjectModification<Flow> rootNode0 =getMockRootNode(ModificationType.DELETE,
-        getIpv4OutputFlow(id0), null);
+    NodeId nodeId0 = new NodeId(new Uri(getRandomId("openflow")));
+    FlowId flowId0 = new FlowId(new Uri(getRandomId("flow")));
+    when(change0.getRootPath()).thenReturn(getMockRootPath(new NodeKey(nodeId0),
+        new TableKey(DEFAULT_TABLE_ID), new FlowKey(flowId0)));
+    DataObjectModification<Flow> rootNode0 = getMockRootNode(ModificationType.DELETE,
+        getIpv4OutputFlow(flowId0), null);
     when(change0.getRootNode()).thenReturn(rootNode0);
     changes.add(change0);
 
-    pathListener.onDataTreeChanged(changes);
+    pathListener1.onDataTreeChanged(changes);
   }
 
 }

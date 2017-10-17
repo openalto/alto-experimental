@@ -36,6 +36,10 @@ public class PathManagerProvider {
       final RpcProviderRegistry rpcProviderRegistry) {
     this.dataBroker = dataBroker;
     this.rpcProviderRegistry = rpcProviderRegistry;
+    this.setListener();
+  }
+
+  private void setListener() {
     this.pathListenerReg = dataBroker
         .registerDataTreeChangeListener(new DataTreeIdentifier<>(LogicalDatastoreType.OPERATIONAL,
             getWildCardPath()), new PathListener(dataBroker));

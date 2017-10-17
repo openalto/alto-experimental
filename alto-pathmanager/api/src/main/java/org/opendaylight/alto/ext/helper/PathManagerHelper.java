@@ -17,8 +17,8 @@ import org.opendaylight.yang.gen.v1.urn.ietf.params.xml.ns.yang.ietf.yang.types.
 import org.opendaylight.yang.gen.v1.urn.opendaylight.action.types.rev131112.action.action.OutputActionCase;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.action.types.rev131112.action.list.Action;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.alto.ext.pathmanager.rev150105.Protocol;
-import org.opendaylight.yang.gen.v1.urn.opendaylight.alto.ext.pathmanager.rev150105.path.FlowDesc;
-import org.opendaylight.yang.gen.v1.urn.opendaylight.alto.ext.pathmanager.rev150105.path.FlowDescBuilder;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.alto.ext.pathmanager.rev150105.path.manager.path.FlowDesc;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.alto.ext.pathmanager.rev150105.path.manager.path.FlowDescBuilder;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.types.rev131026.Flow;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.types.rev131026.flow.Instructions;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.types.rev131026.flow.Match;
@@ -36,6 +36,10 @@ import org.slf4j.LoggerFactory;
 public class PathManagerHelper {
 
   private static final Logger LOG = LoggerFactory.getLogger(PathManagerHelper.class);
+
+  private PathManagerHelper() {
+    throw new IllegalStateException("Utility class");
+  }
 
   public static FlowDesc toAltoFlowDesc(Match match) {
     FlowDescBuilder builder = new FlowDescBuilder();
@@ -104,7 +108,7 @@ public class PathManagerHelper {
     return egressPorts;
   }
 
-  public static boolean isNullableObjectDiff(Object before, Object after) {
+  public static boolean isBothNull(Object before, Object after) {
     if (before == null && after == null) {
       return false;
     }
@@ -115,7 +119,7 @@ public class PathManagerHelper {
     if (before != null && after != null) {
       return !before.equals(after);
     }
-    return isNullableObjectDiff(before, after);
+    return isBothNull(before, after);
   }
 
   public static boolean isFlowRuleDiff(Flow before, Flow after) {
@@ -124,60 +128,63 @@ public class PathManagerHelper {
           isObjectDiff(toOutputNodeConnector(before.getInstructions()),
               toOutputNodeConnector(after.getInstructions()));
     }
-    return isNullableObjectDiff(before, after);
+    return isBothNull(before, after);
   }
-
-
 
   public static boolean isFlowMatch(FlowDesc rule, FlowDesc test) {
     return (rule == null) ||
-            ((iPv4PrefixMatch(rule.getSrcIp(),test.getSrcIp()))
-                    && (iPv4PrefixMatch(rule.getDstIp(),test.getDstIp()))
-                    && (protocolMatch(rule.getProtocol(),test.getProtocol()))
-                    && (portNumberMatch(rule.getSrcPort(),test.getSrcPort()))
-                    && (portNumberMatch(rule.getDstPort(),test.getDstPort()))
-                    && (macAddressMatch(rule.getSrcMac(),test.getSrcMac()))
-                    && (macAddressMatch(rule.getDstMac(),test.getDstMac()))
-            );
-
+        ((isIpv4PrefixMatch(rule.getSrcIp(),test.getSrcIp()))
+            && (isIpv4PrefixMatch(rule.getDstIp(),test.getDstIp()))
+            && (isProtocolMatch(rule.getProtocol(),test.getProtocol()))
+            && (isPortNumberMatch(rule.getSrcPort(),test.getSrcPort()))
+            && (isPortNumberMatch(rule.getDstPort(),test.getDstPort()))
+            && (isMacAddressMatch(rule.getSrcMac(),test.getSrcMac()))
+            && (isMacAddressMatch(rule.getDstMac(),test.getDstMac()))
+        );
   }
-  private static boolean iPv4PrefixMatch(Ipv4Prefix rule, Ipv4Prefix test) {
-    int ruleIPv4Address, ruleIPv4Mask, testIPv4Address, testIPv4Mask;
-    if(rule == null)
-      return true;
-    try {
-      ruleIPv4Address = IPPrefixHelper.iPv4PrefixToIntIPv4Address(rule);
-      ruleIPv4Mask = IPPrefixHelper.ipv4PrefixToIntIPv4Mask(rule);
 
+  private static boolean isIpv4PrefixMatch(Ipv4Prefix rule, Ipv4Prefix test) {
+    int ruleIPv4Address, ruleIPv4Mask, testIPv4Address, testIPv4Mask;
+
+    if(rule == null) {
+      return true;
+    }
+
+    try {
+      ruleIPv4Address = IPPrefixHelper.ipv4PrefixToIntIPv4Address(rule);
+      ruleIPv4Mask = IPPrefixHelper.ipv4PrefixToIntIPv4Mask(rule);
     } catch (UnknownHostException e) {
-      LOG.error("Unknown Host" + rule.getValue(),e);
+      LOG.error("Unknown Host: " + rule.getValue(), e);
       return false;
     }
+
     try {
-      testIPv4Address = IPPrefixHelper.iPv4PrefixToIntIPv4Address(test);
+      testIPv4Address = IPPrefixHelper.ipv4PrefixToIntIPv4Address(test);
       testIPv4Mask = IPPrefixHelper.ipv4PrefixToIntIPv4Mask(test);
     } catch (UnknownHostException e) {
-      LOG.error("Unknown Host" + test.getValue(), e);
+      LOG.error("Unknown Host: " + test.getValue(), e);
       return false;
     }
+
     if(ruleIPv4Mask <= testIPv4Mask) {
-      if((testIPv4Address & ruleIPv4Mask) == (ruleIPv4Address & ruleIPv4Mask))
+      if((testIPv4Address & ruleIPv4Mask) == (ruleIPv4Address & ruleIPv4Mask)) {
         return true;
-      return false;
+      }
     }
+
     return false;
   }
-  private static boolean portNumberMatch(PortNumber rule, PortNumber test) {
-    return (rule == null) ||
-            (rule.equals(test));
+
+  private static boolean isPortNumberMatch(PortNumber rule, PortNumber test) {
+    return (rule == null) || rule.equals(test);
   }
-  private static boolean macAddressMatch(MacAddress rule, MacAddress test) {
-    return (rule == null) ||
-            (rule.equals(test));
+
+  private static boolean isMacAddressMatch(MacAddress rule, MacAddress test) {
+    return (rule == null) || rule.equals(test);
   }
-  private static boolean protocolMatch(Protocol rule, Protocol test) {
-    return (rule == null) ||
-            (rule.equals(test));
+
+  private static boolean isProtocolMatch(Protocol rule, Protocol test) {
+    return (rule == null) || rule.equals(test);
   }
 }
 
