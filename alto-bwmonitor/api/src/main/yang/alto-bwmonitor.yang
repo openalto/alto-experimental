@@ -9,26 +9,35 @@ module alto-bwmonitor {
 
     rpc bwmonitor-query {
         input {
-            leaf portId { type string; }
+            leaf-list port-id {
+                type string;
+            }
         }
         output {
-            leaf rxSpeed { type int32; }
-            leaf txSpeed { type int32; }
+            list port-speed {
+                key port-id;
+                leaf port-id { type string; }
+
+                leaf rx-speed { type uint64; }
+                leaf tx-speed { type uint64; }
+                leaf capacity { type uint32; }
+                leaf avail-bw { type uint32; }
+            }
         }
     }
 
-    rpc bwmonitor-register {
+    rpc bwmonitor-subscribe {
         input {
-            leaf portId { type string; }
+            leaf-list port-id { type string; }
         }
         output {
             leaf result { type boolean; }
         }
     }
 
-    rpc bwmonitor-deregister {
+    rpc bwmonitor-unsubscribe {
         input {
-            leaf portId { type string; }
+            leaf-list port-id { type string; }
         }
         output {
             leaf result { type boolean; }
@@ -36,14 +45,14 @@ module alto-bwmonitor {
     }
 
     container speeds {
-        list node {
-            key portId;
+        list port {
+            key port-id;
+            leaf port-id { type string; }
 
-            leaf portId { type string; }
-
-            leaf rxSpeed { type int32; }
-
-            leaf txSpeed { type int32; }
+            leaf rx-speed { type uint64; }
+            leaf tx-speed { type uint64; }
+            leaf avail-bw { type uint32; }
+            leaf capacity { type uint32; }
         }
     }
 }

@@ -7,41 +7,42 @@
  */
 package org.opendaylight.alto.ext.impl;
 
-import org.opendaylight.controller.md.sal.binding.api.*;
-import org.opendaylight.controller.md.sal.common.api.data.LogicalDatastoreType;
-import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.Nodes;
-import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.node.NodeConnector;
-import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.node.NodeConnectorKey;
-import org.opendaylight.yang.gen.v1.urn.opendaylight.model.statistics.types.rev130925.node.connector.statistics.Bytes;
-import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.bwmonitor.rev150105.Speeds;
-import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.bwmonitor.rev150105.speeds.Node;
-import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.bwmonitor.rev150105.speeds.NodeKey;
-import org.opendaylight.yang.gen.v1.urn.opendaylight.port.statistics.rev131214.FlowCapableNodeConnectorStatisticsData;
-import org.opendaylight.yangtools.concepts.ListenerRegistration;
-import org.opendaylight.yangtools.yang.binding.InstanceIdentifier;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nonnull;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import javax.annotation.Nonnull;
+import org.opendaylight.controller.md.sal.binding.api.DataBroker;
+import org.opendaylight.controller.md.sal.binding.api.DataObjectModification;
+import org.opendaylight.controller.md.sal.binding.api.DataTreeChangeListener;
+import org.opendaylight.controller.md.sal.binding.api.DataTreeIdentifier;
+import org.opendaylight.controller.md.sal.binding.api.DataTreeModification;
+import org.opendaylight.controller.md.sal.common.api.data.LogicalDatastoreType;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.inventory.rev130819.FlowCapableNodeConnector;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.Nodes;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.node.NodeConnector;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.nodes.Node;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.model.statistics.types.rev130925.node.connector.statistics.Bytes;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.port.statistics.rev131214.FlowCapableNodeConnectorStatisticsData;
+import org.opendaylight.yangtools.concepts.ListenerRegistration;
+import org.opendaylight.yangtools.yang.binding.InstanceIdentifier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class BwFetchingService implements DataTreeChangeListener<FlowCapableNodeConnectorStatisticsData>{
+public class BwFetchingService implements DataTreeChangeListener<NodeConnector> {
     /**
      * Global settings
      */
     private DataBroker dataBroker;
     private Logger LOG = LoggerFactory.getLogger(BwFetchingService.class);
     private ListenerRegistration<?> portListner = null;
-    private static final int CPUS = Runtime.getRuntime().availableProcessors();
-    private final ExecutorService exec = Executors.newFixedThreadPool(CPUS);
+    private final ExecutorService exec = Executors.newFixedThreadPool(
+            Runtime.getRuntime().availableProcessors());
 
     /**
-     * Parameter to calculate the speed
+     * Parameter to calculate the speed (magic number?)
      */
     private final Integer timeSpan = 3;
 
@@ -50,9 +51,9 @@ public class BwFetchingService implements DataTreeChangeListener<FlowCapableNode
      * @param dataBroker Given by Provider, to help r/w data store
      */
     public BwFetchingService(DataBroker dataBroker){
-        LOG.info("BwFetchingService initialized");
         this.dataBroker = dataBroker;
         registerPortListener();
+        LOG.info("BwFetchingService initialized");
     }
 
     class Statistic{
@@ -64,88 +65,109 @@ public class BwFetchingService implements DataTreeChangeListener<FlowCapableNode
 
         Long rxSpeed;
         Long txSpeed;
+        Long capacity;
+        Long availBw;
 
         public Statistic(){
             rxHistory = new HashMap<>();
             txHistory = new HashMap<>();
-            rxSpeed = Long.valueOf(-1);
-            txSpeed = Long.valueOf(-1);
+            rxSpeed = 0L;
+            txSpeed = 0L;
+            capacity = 0xffffffffL;
+            availBw = 0xffffffffL;
         }
     }
 
     Map<String, Statistic> statisticData = new HashMap<>();
 
-    private void syncToDataBroker(String name, Statistic statistic){
+    private void syncToDataBroker(String name, Statistic statistic) {
         BwmonitorUtils.writeToSpeeds(name, statistic.rxSpeed, statistic.txSpeed, dataBroker);
-        LOG.debug("Bwmonitor speeds updated: rxSpeed=" + statistic.rxSpeed + ", txSpeed=" + statistic.txSpeed);
+        LOG.debug("Bwmonitor speeds updated: rxSpeed={}, txSpeed={}",
+                statistic.rxSpeed, statistic.txSpeed);
     }
 
-    private void registerPortListener(){
-        InstanceIdentifier<FlowCapableNodeConnectorStatisticsData> iid = InstanceIdentifier
+    private void registerPortListener() {
+        InstanceIdentifier<NodeConnector> iid = InstanceIdentifier
                 .builder(Nodes.class)
-                .child(org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.nodes.Node.class)
-                .child(NodeConnector.class).augmentation(FlowCapableNodeConnectorStatisticsData.class).build();
+                .child(Node.class)
+                .child(NodeConnector.class).build();
         this.portListner = this.dataBroker.registerDataTreeChangeListener(new DataTreeIdentifier<>(LogicalDatastoreType.OPERATIONAL, iid), this);
         LOG.info("BwFetchingService register successfully");
     }
 
     @Override
-    public void onDataTreeChanged(@Nonnull Collection<DataTreeModification<FlowCapableNodeConnectorStatisticsData>> changes) {
+    public void onDataTreeChanged(@Nonnull Collection<DataTreeModification<NodeConnector>> changes) {
         LOG.debug("Get Data Changed");
-        exec.submit(()->{
-            for(DataTreeModification<FlowCapableNodeConnectorStatisticsData> change: changes){
-                DataObjectModification<FlowCapableNodeConnectorStatisticsData> rootNode = change.getRootNode();
-                InstanceIdentifier<FlowCapableNodeConnectorStatisticsData> iid = change.getRootPath().getRootIdentifier();
-                switch (rootNode.getModificationType()){
-                    case WRITE:
-                    case SUBTREE_MODIFIED:
-                        onFlowCapableNodeConnectorStatisticsDataUpdated(iid, rootNode.getDataAfter());
-                        break;
-                    case DELETE:
-                        onFlowCapableConnectorStatisticsDataDeleted(iid);
+        exec.submit(() -> {
+            for (DataTreeModification<NodeConnector> change: changes) {
+                DataObjectModification<NodeConnector> rootNode = change.getRootNode();
+                InstanceIdentifier<NodeConnector> iid = change.getRootPath().getRootIdentifier();
+                String id = iid.firstKeyOf(NodeConnector.class).getId().getValue();
+                // Only handle the registered port
+                if (statisticData.containsKey(id)) {
+                    switch (rootNode.getModificationType()) {
+                        case WRITE:
+                        case SUBTREE_MODIFIED:
+                            onFlowCapableNodeConnectorStatisticsDataUpdated(iid, rootNode.getDataAfter());
+                            break;
+                        case DELETE:
+                            onFlowCapableNodeConnectorStatisticsDataDeleted(iid);
+                    }
                 }
             }
         });
     }
 
-    private void onFlowCapableConnectorStatisticsDataDeleted(InstanceIdentifier<FlowCapableNodeConnectorStatisticsData> identifier) {
-        String name = identifier.firstKeyOf(NodeConnector.class, NodeConnectorKey.class).getId().getValue();
+    private void onFlowCapableNodeConnectorStatisticsDataDeleted(InstanceIdentifier<NodeConnector> identifier) {
+        String name = identifier.firstKeyOf(NodeConnector.class).getId().getValue();
         this.removeListeningPort(name);
     }
 
-    private void onFlowCapableNodeConnectorStatisticsDataUpdated(InstanceIdentifier<FlowCapableNodeConnectorStatisticsData> identifier, FlowCapableNodeConnectorStatisticsData originStatistic) {
-        Bytes bytes = originStatistic.getFlowCapableNodeConnectorStatistics().getBytes();
-        if (bytes != null) {
-            Statistic statistic;
-            String id = identifier
-                    .firstKeyOf(NodeConnector.class, NodeConnectorKey.class)
-                    .getId().getValue();
-            if (statisticData.containsKey(id)) {
-                statistic = statisticData.get(id);
-            } else {
-                statistic = new Statistic();
-                statisticData.put(id, statistic);
-            }
-            Long timestamp = originStatistic.getFlowCapableNodeConnectorStatistics()
+    private void onFlowCapableNodeConnectorStatisticsDataUpdated(
+            InstanceIdentifier<NodeConnector> identifier,
+            NodeConnector updatedPort) {
+        FlowCapableNodeConnectorStatisticsData updatedStatistic = updatedPort
+                .getAugmentation(FlowCapableNodeConnectorStatisticsData.class);
+        Statistic statistic;
+        String id = identifier.firstKeyOf(NodeConnector.class).getId().getValue();
+        if (statisticData.containsKey(id)) {
+            statistic = statisticData.get(id);
+        } else {
+            LOG.debug("Port is not subscribed for monitoring!");
+            return;
+        }
+        if (updatedStatistic != null) {
+            Bytes bytes = updatedStatistic.getFlowCapableNodeConnectorStatistics().getBytes();
+            if (bytes != null) {
+                Long timestamp = updatedStatistic.getFlowCapableNodeConnectorStatistics()
                     .getDuration().getSecond().getValue();
-            statistic.rxHistory.put(timestamp, bytes.getReceived().longValue());
-            statistic.txHistory.put(timestamp, bytes.getTransmitted().longValue());
-            statistic.rxSpeed = computeStatisticFromHistory(statistic.rxHistory, timestamp);
-            statistic.txSpeed = computeStatisticFromHistory(statistic.txHistory, timestamp);
+                statistic.rxHistory.put(timestamp, bytes.getReceived().longValue());
+                statistic.txHistory.put(timestamp, bytes.getTransmitted().longValue());
+                statistic.rxSpeed = computeStatisticFromHistory(statistic.rxHistory, timestamp);
+                statistic.txSpeed = computeStatisticFromHistory(statistic.txHistory, timestamp);
+            }
+        }
+        FlowCapableNodeConnector updatedFlowPort = updatedPort
+            .getAugmentation(FlowCapableNodeConnector.class);
+        if (updatedFlowPort != null) {
+            statistic.capacity = updatedFlowPort.getCurrentSpeed();
+            statistic.availBw = statistic.capacity - statistic.txSpeed / 128;
+        }
+        if (statistic != null) {
             syncToDataBroker(id, statistic);
         }
     }
 
     private void cleanStatisticHistory(Map<Long, Long> history, Long timestamp, boolean inTimeSpan) {
-        if(inTimeSpan){
+        if (inTimeSpan) {
             history.entrySet().removeIf(e -> e.getKey() < (timestamp - timeSpan));
         } else {
             Long maxTime = Long.valueOf(0);
-            for(Map.Entry<Long, Long> item : history.entrySet()){
+            for (Map.Entry<Long, Long> item : history.entrySet()) {
                 if(item.getKey() != timestamp && item.getKey() > maxTime)
                     maxTime = item.getKey();
             }
-            for(Iterator<Map.Entry<Long, Long>> it = history.entrySet().iterator(); it.hasNext(); ) {
+            for (Iterator<Map.Entry<Long, Long>> it = history.entrySet().iterator(); it.hasNext(); ) {
                 Map.Entry<Long, Long> entry = it.next();
                 if(entry.getKey() < maxTime) {
                     it.remove();
@@ -159,23 +181,23 @@ public class BwFetchingService implements DataTreeChangeListener<FlowCapableNode
          * current speed = (average speed in timeSpan) * 0.8 + (speed from last history record) * 0.2
          */
         boolean inTimeSpan = false;
-        for(Map.Entry<Long, Long> item : history.entrySet()){
-            if(!item.getKey().equals(timestamp) && item.getKey() > timestamp - timeSpan){
+        for (Map.Entry<Long, Long> item : history.entrySet()) {
+            if (!item.getKey().equals(timestamp) && item.getKey() > timestamp - timeSpan) {
                 inTimeSpan = true;
                 break;
             }
         }
         cleanStatisticHistory(history, timestamp, inTimeSpan);
         Long minTime = Long.MAX_VALUE;
-        Long maxTime = (long)0;
-        for(Map.Entry<Long, Long> item : history.entrySet()){
-            if(item.getKey() != timestamp && item.getKey() < minTime)
+        Long maxTime = 0L;
+        for (Map.Entry<Long, Long> item : history.entrySet()) {
+            if (item.getKey() != timestamp && item.getKey() < minTime)
                 minTime = item.getKey();
-            if(item.getKey() != timestamp && item.getKey() > maxTime)
+            if (item.getKey() != timestamp && item.getKey() > maxTime)
                 maxTime = item.getKey();
         }
         Long speedFromLastRecord = (history.get(maxTime) - history.get(timestamp)) / (timestamp - maxTime);
-        if(inTimeSpan){
+        if (inTimeSpan) {
             Long speedFromTimeSpan = (history.get(minTime) - history.get(timestamp)) / (timestamp - minTime);
             return (long)(speedFromTimeSpan * 0.8 + speedFromLastRecord * 0.2);
         } else {
@@ -183,21 +205,33 @@ public class BwFetchingService implements DataTreeChangeListener<FlowCapableNode
         }
     }
 
-    public void addListeningPort(String portId){
-        if(!this.statisticData.containsKey(portId)){
+    public void addListeningPort(String portId) {
+        if (!this.statisticData.containsKey(portId)) {
             statisticData.put(portId, new Statistic());
-            LOG.debug("Add listening port: " + portId);
+            LOG.debug("Add listening port: {}", portId);
         } else {
-            LOG.debug("Try to add existent listening port: " + portId);
+            LOG.debug("Try to add existent listening port: {}", portId);
         }
     }
 
     public void removeListeningPort(String portId) {
-        if(this.statisticData.containsKey(portId)){
+        if (this.statisticData.containsKey(portId)) {
             statisticData.remove(portId);
-            LOG.debug("Remove listening port: " + portId);
+            LOG.debug("Remove listening port: {}", portId);
         } else {
-            LOG.debug("Try to remove nonexistent listening port: " + portId);
+            LOG.debug("Try to remove nonexistent listening port: {}", portId);
         }
+    }
+
+    public void close() {
+        if (portListner != null) {
+            LOG.info("Closing portListener...");
+            portListner.close();
+        }
+        if (!exec.isShutdown()) {
+            LOG.info("Stopping executor service...");
+            exec.shutdownNow();
+        }
+        LOG.info("BwFetchingService closed");
     }
 }

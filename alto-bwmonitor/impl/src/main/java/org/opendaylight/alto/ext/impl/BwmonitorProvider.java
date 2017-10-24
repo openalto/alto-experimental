@@ -19,7 +19,6 @@ public class BwmonitorProvider{
     private BindingAwareBroker.RpcRegistration<AltoBwmonitorService> bwmonitorService;
 
     private final DataBroker dataBroker;
-    private BwFetchingService bwFetchingService;
     private BwmonitorImpl bwmonitorImpl;
 
     public BwmonitorProvider(final DataBroker dataBroker) {
@@ -31,8 +30,7 @@ public class BwmonitorProvider{
      */
     public void init() {
         LOG.info("BwmonitorProvider session initiated");
-        bwFetchingService = new BwFetchingService(dataBroker);
-        bwmonitorImpl = new BwmonitorImpl(dataBroker, bwFetchingService);
+        bwmonitorImpl = new BwmonitorImpl(dataBroker);
     }
 
     /**

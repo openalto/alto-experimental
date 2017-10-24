@@ -11,41 +11,55 @@ package org.opendaylight.alto.ext.impl;
 import com.google.common.base.Optional;
 import com.google.common.util.concurrent.CheckedFuture;
 import com.google.common.util.concurrent.Futures;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import org.opendaylight.controller.md.sal.binding.api.DataBroker;
 import org.opendaylight.controller.md.sal.binding.api.ReadTransaction;
 import org.opendaylight.controller.md.sal.binding.api.WriteTransaction;
 import org.opendaylight.controller.md.sal.common.api.data.LogicalDatastoreType;
 import org.opendaylight.controller.md.sal.common.api.data.TransactionCommitFailedException;
-import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.bwmonitor.rev150105.*;
-import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.bwmonitor.rev150105.speeds.Node;
-import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.bwmonitor.rev150105.speeds.NodeKey;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.bwmonitor.rev150105.AltoBwmonitorService;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.bwmonitor.rev150105.BwmonitorUnsubscribeInput;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.bwmonitor.rev150105.BwmonitorUnsubscribeOutput;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.bwmonitor.rev150105.BwmonitorUnsubscribeOutputBuilder;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.bwmonitor.rev150105.BwmonitorQueryInput;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.bwmonitor.rev150105.BwmonitorQueryOutput;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.bwmonitor.rev150105.BwmonitorQueryOutputBuilder;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.bwmonitor.rev150105.BwmonitorSubscribeInput;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.bwmonitor.rev150105.BwmonitorSubscribeOutput;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.bwmonitor.rev150105.BwmonitorSubscribeOutputBuilder;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.bwmonitor.rev150105.Speeds;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.bwmonitor.rev150105.SpeedsBuilder;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.bwmonitor.rev150105.bwmonitor.query.output.PortSpeed;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.bwmonitor.rev150105.bwmonitor.query.output.PortSpeedBuilder;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.bwmonitor.rev150105.speeds.Port;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.bwmonitor.rev150105.speeds.PortKey;
 import org.opendaylight.yangtools.yang.binding.InstanceIdentifier;
 import org.opendaylight.yangtools.yang.common.RpcResult;
 import org.opendaylight.yangtools.yang.common.RpcResultBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-
-public class BwmonitorImpl implements AltoBwmonitorService{
+public class BwmonitorImpl implements AltoBwmonitorService {
     private DataBroker db;
     private BwFetchingService bwFetchingService;
     private static final Logger LOG = LoggerFactory.getLogger(BwmonitorImpl.class);
     private boolean dataTreeInitialized = false;
 
-    public BwmonitorImpl(DataBroker dataBroker, BwFetchingService bwFetchingService){
-        this.db = dataBroker;
-        this.bwFetchingService = bwFetchingService;
+    public BwmonitorImpl(DataBroker dataBroker) {
+        db = dataBroker;
+        bwFetchingService = new BwFetchingService(dataBroker);
     }
 
-    private boolean initializeDataTree(){
+    private boolean initializeDataTree() {
         WriteTransaction transaction = db.newWriteOnlyTransaction();
         InstanceIdentifier<Speeds> iid = InstanceIdentifier.create(Speeds.class);
         Speeds speeds = new SpeedsBuilder().build();
         transaction.put(LogicalDatastoreType.OPERATIONAL, iid, speeds);
         CheckedFuture<Void, TransactionCommitFailedException> future = transaction.submit();
-        Futures.addCallback(future, new LoggingFuturesCallBack<Void>("Failed to create speeds", LOG));
+        Futures.addCallback(future, new LoggingFuturesCallBack<>("Failed to create speeds", LOG));
 
         try {
             future.checkedGet();
@@ -58,49 +72,95 @@ public class BwmonitorImpl implements AltoBwmonitorService{
     }
 
     @Override
-    public Future<RpcResult<BwmonitorRegisterOutput>> bwmonitorRegister(BwmonitorRegisterInput input) {
-        LOG.debug("Get Input: " + input.getPortId());
+    public Future<RpcResult<BwmonitorSubscribeOutput>> bwmonitorSubscribe(BwmonitorSubscribeInput input) {
         boolean success = true;
-        if(!dataTreeInitialized) success = initializeDataTree();
-        if(success) success = BwmonitorUtils.writeToSpeeds(input.getPortId(), (long)0, (long)0, db);
-        BwmonitorRegisterOutput output = new BwmonitorRegisterOutputBuilder()
-                .setResult(success).build();
-        LOG.debug("Register node: " + input.getPortId());
-        this.bwFetchingService.addListeningPort(input.getPortId());
-        return RpcResultBuilder.success(output).buildFuture();
+        if(!dataTreeInitialized) {
+            success = initializeDataTree();
+        }
+        if (success) {
+            List<String> ports = input.getPortId();
+            if (ports != null) {
+                for (String port : ports) {
+                    success = BwmonitorUtils.writeToSpeeds(port, 0L, 0L, db);
+                    if (success) {
+                        /**
+                         * Deliver databroker into utility function is inefficient
+                         * TODO: try to deliver transaction instead
+                         */
+                        bwFetchingService.addListeningPort(port);
+                        LOG.debug("Subscribe node: {}", port);
+                    } else {
+                        LOG.debug("Fail to register node: {}", port);
+                        break;
+                    }
+                }
+            }
+        }
+        return RpcResultBuilder.success(new BwmonitorSubscribeOutputBuilder()
+                .setResult(success).build()).buildFuture();
     }
 
     @Override
     public Future<RpcResult<BwmonitorQueryOutput>> bwmonitorQuery(BwmonitorQueryInput input) {
         ReadTransaction transaction = db.newReadOnlyTransaction();
-        InstanceIdentifier<Node> iid = InstanceIdentifier.create(Speeds.class).child(Node.class, new NodeKey(input.getPortId()));
+        InstanceIdentifier<Speeds> iid = InstanceIdentifier.create(Speeds.class);
+        BwmonitorQueryOutputBuilder builder = new BwmonitorQueryOutputBuilder();
+        List<String> queriedPorts = input.getPortId();
+        if (queriedPorts == null) {
+            queriedPorts = new ArrayList<>();
+        }
         try {
-            Optional<Node> nodeData = transaction.read(LogicalDatastoreType.OPERATIONAL, iid).get();
+            Optional<Speeds> nodeData = transaction.read(LogicalDatastoreType.OPERATIONAL, iid).get();
             if(nodeData.isPresent()){
-                BwmonitorQueryOutput output = new BwmonitorQueryOutputBuilder()
-                        .setRxSpeed(nodeData.get().getRxSpeed())
-                        .setTxSpeed(nodeData.get().getTxSpeed())
-                        .build();
-                LOG.debug("Query node: " + input.getPortId() + ", RxSpeed: " + output.getRxSpeed() + ", TxSpeed: " + output.getTxSpeed());
-                return RpcResultBuilder.success(output).buildFuture();
+                List<PortSpeed> portSpeeds = new ArrayList<>();
+                builder.setPortSpeed(portSpeeds);
+                List<Port> allPorts = nodeData.get().getPort();
+                if (allPorts != null) {
+                    for (Port port : allPorts) {
+                        if (queriedPorts.contains(port.getPortId())) {
+                            portSpeeds.add(new PortSpeedBuilder()
+                                .setPortId(port.getPortId())
+                                .setRxSpeed(port.getRxSpeed())
+                                .setTxSpeed(port.getTxSpeed())
+                                .setCapacity(port.getCapacity())
+                                .setAvailBw(port.getAvailBw())
+                                .build());
+                            LOG.debug("Query node: {}, RxSpeed: {}, TxSpeed: {}, Capacity: {}, "
+                                    + "AvailBw: {}", port.getPortId(), port.getRxSpeed(),
+                                    port.getTxSpeed(), port.getCapacity(), port.getAvailBw());
+                        }
+                    }
+                }
+                return RpcResultBuilder.success(builder.build()).buildFuture();
             }
         } catch (InterruptedException|ExecutionException e){
             LOG.error(e.getMessage());
         }
-        BwmonitorQueryOutput output = new BwmonitorQueryOutputBuilder()
-                .setRxSpeed(-1)
-                .setTxSpeed(-1)
-                .build();
-        return RpcResultBuilder.success(output).buildFuture();
+        return RpcResultBuilder.success(builder.build()).buildFuture();
     }
 
     @Override
-    public Future<RpcResult<BwmonitorDeregisterOutput>> bwmonitorDeregister(BwmonitorDeregisterInput input) {
-        this.bwFetchingService.removeListeningPort(input.getPortId());
-        WriteTransaction transaction = db.newWriteOnlyTransaction();
-        InstanceIdentifier<Node> iid = InstanceIdentifier.create(Speeds.class).child(Node.class, new NodeKey(input.getPortId()));
-        transaction.delete(LogicalDatastoreType.OPERATIONAL, iid);
-        BwmonitorDeregisterOutput output = new BwmonitorDeregisterOutputBuilder().setResult(true).build();
-        return RpcResultBuilder.success(output).buildFuture();
+    public Future<RpcResult<BwmonitorUnsubscribeOutput>> bwmonitorUnsubscribe(BwmonitorUnsubscribeInput input) {
+        List<String> ports = input.getPortId();
+        BwmonitorUnsubscribeOutputBuilder builder = new BwmonitorUnsubscribeOutputBuilder()
+                .setResult(true);
+        if (ports != null) {
+            WriteTransaction transaction = db.newWriteOnlyTransaction();
+            for (String port : ports) {
+                bwFetchingService.removeListeningPort(port);
+                InstanceIdentifier<Port> iid = InstanceIdentifier.create(Speeds.class)
+                        .child(Port.class, new PortKey(port));
+                transaction.delete(LogicalDatastoreType.OPERATIONAL, iid);
+            }
+            transaction.submit();
+        }
+        return RpcResultBuilder.success(builder.build()).buildFuture();
+    }
+
+    public void close() {
+        if (bwFetchingService != null) {
+            bwFetchingService.close();
+        }
+        LOG.info("BwmonitorImpl closed");
     }
 }

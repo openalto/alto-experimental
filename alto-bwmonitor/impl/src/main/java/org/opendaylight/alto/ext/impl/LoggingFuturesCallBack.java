@@ -10,8 +10,6 @@ package org.opendaylight.alto.ext.impl;
 import com.google.common.util.concurrent.FutureCallback;
 import org.slf4j.Logger;
 
-import javax.annotation.Nullable;
-
 public class LoggingFuturesCallBack<T> implements FutureCallback<T>{
     private Logger LOG;
     private String message;
