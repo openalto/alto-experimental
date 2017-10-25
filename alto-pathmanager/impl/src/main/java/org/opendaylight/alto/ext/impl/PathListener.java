@@ -10,7 +10,6 @@ package org.opendaylight.alto.ext.impl;
 import java.util.Collection;
 import javax.annotation.Nonnull;
 import org.opendaylight.alto.ext.helper.PathManagerHelper;
-import org.opendaylight.controller.md.sal.binding.api.DataBroker;
 import org.opendaylight.controller.md.sal.binding.api.DataObjectModification;
 import org.opendaylight.controller.md.sal.binding.api.DataTreeChangeListener;
 import org.opendaylight.controller.md.sal.binding.api.DataTreeModification;
@@ -26,12 +25,10 @@ public class PathListener implements DataTreeChangeListener<Flow> {
   private static final Logger LOG = LoggerFactory.getLogger(PathListener.class);
   private static final Short DEFAULT_TABLE_ID = 0;
 
-  private final DataBroker dataBroker;
   private final PathManagerUpdater updater;
 
-  public PathListener(DataBroker dataBroker) {
-    this.dataBroker = dataBroker;
-    updater = new PathManagerUpdater(dataBroker);
+  public PathListener(final PathManagerUpdater updater) {
+    this.updater = updater;
   }
 
   @Override

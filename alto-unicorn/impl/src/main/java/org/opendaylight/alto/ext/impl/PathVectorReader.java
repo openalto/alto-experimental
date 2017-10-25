@@ -59,7 +59,7 @@ public class PathVectorReader {
           .create(PathManager.class));
       if (pathManager != null && pathManager.getPath() != null) {
         pathList = pathManager.getPath();
-        pathList.sort(Comparator.comparing(Path::getId).reversed());
+        pathList.sort(Comparator.comparing(Path::getPriority).reversed());
       }
     } catch (ReadDataFailedException e) {
       LOG.error("Fail to sync data from path manager:", e);
