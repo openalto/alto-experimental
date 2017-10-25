@@ -10,8 +10,8 @@ package org.opendaylight.alto.ext.impl;
 import java.util.ArrayList;
 import java.util.List;
 import org.opendaylight.alto.ext.helper.PathManagerHelper;
-import org.opendaylight.alto.ext.impl.help.DataStoreHelper;
-import org.opendaylight.alto.ext.impl.help.ReadDataFailedException;
+import org.opendaylight.alto.ext.impl.helper.DataStoreHelper;
+import org.opendaylight.alto.ext.impl.helper.ReadDataFailedException;
 import org.opendaylight.controller.md.sal.binding.api.DataBroker;
 import org.opendaylight.yang.gen.v1.urn.ietf.params.xml.ns.yang.ietf.inet.types.rev130715.Uri;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.alto.ext.pathmanager.rev150105.PathManager;
@@ -90,15 +90,20 @@ public class PathManagerUpdater {
     for (Path path : paths) {
       LOG.debug("Compare flowDesc of path and inserted flow: {} and {}.", flowDesc,
           path.getFlowDesc());
-      List<FlowDesc> flowDescSet = getUnionFlowDesc(flowDesc, path.getFlowDesc());
+      List<FlowDesc> flowDescSet = getUnionFlowDesc(path.getFlowDesc(), flowDesc);
       if (flowDescSet != null) {
         LOG.debug("FlowDesc does not match this path.");
       }
     }
   }
 
-  private List<FlowDesc> getUnionFlowDesc(FlowDesc flowDesc, FlowDesc flowDesc1) {
-    return null;
+  private List<FlowDesc> getUnionFlowDesc(FlowDesc ruleFlow, FlowDesc testFlow) {
+    List<FlowDesc> flowDescs = new ArrayList<>();
+    if (PathManagerHelper.isFlowMatch(ruleFlow, testFlow)) {
+      flowDescs.add(testFlow);
+    }
+    // TODO: Handle the intersection between tesFlow and rulFlow.
+    return flowDescs;
   }
 
   public void updateFlowRule(String nodeId, Flow before, Flow after) {

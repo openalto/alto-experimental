@@ -22,6 +22,7 @@ import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.opendaylight.alto.ext.helper.PathManagerHelper;
 import org.opendaylight.controller.md.sal.binding.api.DataBroker;
 import org.opendaylight.controller.md.sal.binding.api.DataObjectModification;
 import org.opendaylight.controller.md.sal.binding.api.DataObjectModification.ModificationType;
@@ -36,6 +37,8 @@ import org.opendaylight.yang.gen.v1.urn.opendaylight.action.types.rev131112.acti
 import org.opendaylight.yang.gen.v1.urn.opendaylight.action.types.rev131112.action.action.output.action._case.OutputActionBuilder;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.action.types.rev131112.action.list.ActionBuilder;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.alto.ext.pathmanager.rev150105.PathManager;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.alto.ext.pathmanager.rev150105.PathManagerBuilder;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.alto.ext.pathmanager.rev150105.path.manager.PathBuilder;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.inventory.rev130819.FlowCapableNode;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.inventory.rev130819.FlowCapableNodeBuilder;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.inventory.rev130819.FlowId;
@@ -56,6 +59,7 @@ import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.NodesBu
 import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.nodes.Node;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.nodes.NodeBuilder;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.nodes.NodeKey;
+import org.opendaylight.yang.gen.v1.urn.opendaylight.model.match.types.rev131026.match.Layer3Match;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.model.match.types.rev131026.match.layer._3.match.Ipv4MatchBuilder;
 import org.opendaylight.yangtools.yang.binding.InstanceIdentifier;
 
@@ -90,10 +94,11 @@ public class PathListenerTest {
 
     DataBroker dataBroker2 = mock(DataBroker.class);
     ReadOnlyTransaction rx2 = mock(ReadOnlyTransaction.class);
+
     CheckedFuture<Optional<Nodes>, ReadFailedException> future2 = mock(CheckedFuture.class);
-    Optional<Nodes> optional = mock(Optional.class);
-    when(optional.isPresent()).thenReturn(true);
-    when(optional.get()).thenReturn(new NodesBuilder()
+    Optional<Nodes> optional2 = mock(Optional.class);
+    when(optional2.isPresent()).thenReturn(true);
+    when(optional2.get()).thenReturn(new NodesBuilder()
         .setNode(Arrays.asList(
             new NodeBuilder()
                 .setId(new NodeId(new Uri("openflow1")))
@@ -110,11 +115,27 @@ public class PathListenerTest {
                         .build())
                 .build()))
         .build());
-    when(future2.get()).thenReturn(optional);
+    when(future2.get()).thenReturn(optional2);
+
+    CheckedFuture<Optional<PathManager>, ReadFailedException> future3 = mock(CheckedFuture.class);
+    Optional<PathManager> optional3 = mock(Optional.class);
+    when(optional3.isPresent()).thenReturn(true);
+    when(optional3.get()).thenReturn(new PathManagerBuilder()
+        .setPath(Arrays.asList(
+            new PathBuilder()
+                .setId(0L)
+                .setFlowDesc(PathManagerHelper.toAltoFlowDesc(
+                    new MatchBuilder().setLayer3Match(
+                        getIpv4Match(null, new Ipv4Prefix("10.0.0.1/16")))
+                        .build()))
+                .build()))
+        .build());
+    when(future3.get()).thenReturn(optional3);
+
     when(rx2.read(any(LogicalDatastoreType.class), eq(INV_NODE_IID)))
         .thenReturn(future2);
     when(rx2.read(any(LogicalDatastoreType.class), eq(PATH_MANAGER_IID)))
-        .thenReturn(null);
+        .thenReturn(future3);
     when(dataBroker2.newReadOnlyTransaction()).thenReturn(rx2);
     pathListener2 = new PathListener(dataBroker2);
   }
@@ -148,12 +169,17 @@ public class PathListenerTest {
     return prefix + ":" + UUID.randomUUID().toString().substring(0, 8);
   }
 
+  private Layer3Match getIpv4Match(Ipv4Prefix srcPrefix, Ipv4Prefix dstPrefix) {
+    return new Ipv4MatchBuilder()
+        .setIpv4Source(srcPrefix)
+        .setIpv4Destination(dstPrefix)
+        .build();
+  }
+
   private FlowBuilder getIpv4FlowBuilder(FlowId id) {
     return new FlowBuilder().setId(id)
         .setMatch(new MatchBuilder().setLayer3Match(
-            new Ipv4MatchBuilder()
-                .setIpv4Destination(new Ipv4Prefix("10.0.0.1/24"))
-                .build())
+            getIpv4Match(null, new Ipv4Prefix("10.0.0.1/24")))
             .build());
   }
 
@@ -189,6 +215,7 @@ public class PathListenerTest {
     try {
       Collection<DataTreeModification<Flow>> nullChanges = null;
       pathListener1.onDataTreeChanged(nullChanges);
+      pathListener2.onDataTreeChanged(nullChanges);
     } catch (Exception e) {
       Assert.assertEquals(IllegalArgumentException.class, e.getClass());
     }
@@ -199,6 +226,7 @@ public class PathListenerTest {
     changes.add(change0);
 
     pathListener1.onDataTreeChanged(changes);
+    pathListener2.onDataTreeChanged(changes);
   }
 
   /**
@@ -217,6 +245,7 @@ public class PathListenerTest {
     changes.add(change0);
 
     pathListener1.onDataTreeChanged(changes);
+    pathListener2.onDataTreeChanged(changes);
   }
 
   /**
@@ -247,6 +276,7 @@ public class PathListenerTest {
     changes.add(change1);
 
     pathListener1.onDataTreeChanged(changes);
+    pathListener2.onDataTreeChanged(changes);
   }
 
   /**
@@ -267,6 +297,7 @@ public class PathListenerTest {
     changes.add(change0);
 
     pathListener1.onDataTreeChanged(changes);
+    pathListener2.onDataTreeChanged(changes);
   }
 
 }

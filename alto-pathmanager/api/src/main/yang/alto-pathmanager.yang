@@ -32,7 +32,7 @@ module alto-pathmanager {
         list path {
             key id;
             leaf id {
-                type int32;
+                type uint32;
             }
 
             container flow-desc {
@@ -70,22 +70,6 @@ module alto-pathmanager {
         }
         leaf dst-mac {
             type ietf-yang-types:mac-address;
-        }
-    }
-
-    rpc hello {
-        input {
-            leaf src {
-                type ietf-inet:ip-address;
-            }
-            leaf dst {
-                type ietf-inet:ip-address;
-            }
-        }
-        output {
-            leaf match {
-                type string;
-            }
         }
     }
 }

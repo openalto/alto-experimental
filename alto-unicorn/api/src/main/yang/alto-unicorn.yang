@@ -1,0 +1,81 @@
+module alto-unicorn {
+    yang-version 1;
+    namespace "urn:opendaylight:alto:ext:unicorn";
+    prefix "alto-unicorn";
+
+    revision "2015-01-05" {
+        description "Initial revision of alto-unicorn model";
+    }
+
+    import ietf-inet-types {
+        prefix "ietf-inet";
+    }
+
+    import alto-pathmanager {
+        prefix "pathmanager";
+    }
+
+    grouping alto-query-desc {
+        container flow {
+            uses pathmanager:alto-flow-desc;
+        }
+        leaf ingress-point {
+            type ietf-inet:ip-address;
+        }
+    }
+
+    rpc path-query {
+        input {
+            list path-query-desc {
+                key flow-id;
+                leaf flow-id {
+                    type uint32;
+                }
+                uses alto-query-desc;
+            }
+        }
+        output {
+            list next-ingress-point {
+                key flow-id;
+                leaf flow-id {
+                    type uint32;
+                }
+                leaf ingress-point {
+                    type ietf-inet:ip-address;
+                }
+            }
+        }
+    }
+
+    rpc resource-query {
+        input {
+            list resource-query-desc {
+                key flow-id;
+                leaf flow-id {
+                    type uint32;
+                }
+                uses alto-query-desc;
+            }
+        }
+        output {
+            list anes {
+                list ane-flow-coefficient {
+                    key flow-id;
+                    leaf flow-id {
+                        type uint32;
+                    }
+                    leaf coefficient {
+                        type decimal64 {
+                            fraction-digits 6;
+                            range "0 .. 1";
+                        }
+                    }
+                }
+                leaf availbw {
+                    type uint32;
+                }
+            }
+        }
+    }
+}
+

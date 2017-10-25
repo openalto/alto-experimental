@@ -6,9 +6,9 @@
 This repo contains the following projects which are based on OpenDaylight
 Carbon SR1 Stable Realease.
 
-- [alto-bwmonitor](alto-bwmonitor)
-- [alto-pathmanager](alto-pathmanager)
-- [alto-pathquery](alto-pathquery)
+- [alto-bwmonitor](alto-bwmonitor): A real-time bandwidth monitor.
+- [alto-pathmanager](alto-pathmanager): An OpenFlow based path manager.
+- [alto-unicorn](alto-unicorn): A rpc wrapper for Unicorn APIs (path-query and resource-query).
 
 > These projects are expected to be released in OpenDaylight Oxygen if the test
 report is good enough.

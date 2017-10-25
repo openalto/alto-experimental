@@ -16,28 +16,28 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
   <repository>mvn:org.opendaylight.netconf/features-restconf/{{VERSION}}/xml/features</repository>
   <repository>mvn:org.opendaylight.dluxapps/features-dluxapps/{{VERSION}}/xml/features</repository>
   <repository>mvn:org.opendaylight.openflowplugin/features-openflowplugin/{{VERSION}}/xml/features</repository>
-  <feature name='odl-alto-pathmanager-api' version='${project.version}' description='OpenDaylight :: alto-pathmanager :: api'>
+  <repository>mvn:org.opendaylight.alto.ext/alto-bwmonitor-features/{{VERSION}}/xml/features</repository>
+  <repository>mvn:org.opendaylight.alto.ext/alto-pathmanager-features/{{VERSION}}/xml/features</repository>
+  <feature name='odl-alto-unicorn-api' version='${project.version}' description='OpenDaylight :: alto-unicorn :: api'>
     <feature version='${mdsal.model.version}'>odl-mdsal-models</feature>
-    <feature version='${openflowplugin.version}'>odl-openflowplugin-flow-services</feature>
-    <bundle>mvn:org.opendaylight.alto.ext/alto-pathmanager-api/{{VERSION}}</bundle>
-  </feature>
-  <feature name='odl-alto-pathmanager' version='${project.version}' description='OpenDaylight :: alto-pathmanager'>
-    <feature version='${mdsal.version}'>odl-mdsal-broker</feature>
     <feature version='${project.version}'>odl-alto-pathmanager-api</feature>
-    <bundle>mvn:org.opendaylight.alto.ext/alto-pathmanager-impl/{{VERSION}}</bundle>
+    <bundle>mvn:org.opendaylight.alto.ext/alto-unicorn-api/{{VERSION}}</bundle>
   </feature>
-  <feature name='odl-alto-pathmanager-rest' version='${project.version}' description='OpenDaylight :: alto-pathmanager :: REST'>
-    <feature version="${project.version}">odl-alto-pathmanager</feature>
+  <feature name='odl-alto-unicorn' version='${project.version}' description='OpenDaylight :: alto-unicorn'>
+    <feature version='${mdsal.version}'>odl-mdsal-broker</feature>
+    <feature version='${project.version}'>odl-alto-unicorn-api</feature>
+    <feature version='${project.version}'>odl-alto-bwmonitor</feature>
+    <feature version='${project.version}'>odl-alto-pathmanager</feature>
+    <bundle>mvn:org.opendaylight.alto.ext/alto-unicorn-impl/{{VERSION}}</bundle>
+  </feature>
+  <feature name='odl-alto-unicorn-rest' version='${project.version}' description='OpenDaylight :: alto-unicorn :: REST'>
+    <feature version="${project.version}">odl-alto-unicorn</feature>
     <feature version="${restconf.version}">odl-restconf</feature>
   </feature>
-  <feature name='odl-alto-pathmanager-ui' version='${project.version}' description='OpenDaylight :: alto-pathmanager :: UI'>
-    <feature version="${project.version}">odl-alto-pathmanager-rest</feature>
+  <feature name='odl-alto-unicorn-ui' version='${project.version}' description='OpenDaylight :: alto-unicorn :: UI'>
+    <feature version="${project.version}">odl-alto-unicorn-rest</feature>
     <feature version="${restconf.version}">odl-mdsal-apidocs</feature>
     <feature version="${dluxapps.version}">odl-dluxapps-yangui</feature>
-  </feature>
-  <feature name='odl-alto-pathmanager-cli' version='${project.version}' description='OpenDaylight :: alto-pathmanager :: CLI'>
-    <feature version="${project.version}">odl-alto-pathmanager</feature>
-    <bundle>mvn:org.opendaylight.alto.ext/alto-pathmanager-cli/{{VERSION}}</bundle>
   </feature>
 
 </features>

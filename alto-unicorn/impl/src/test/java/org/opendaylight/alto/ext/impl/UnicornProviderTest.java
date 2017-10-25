@@ -14,14 +14,15 @@ import org.junit.Test;
 import org.opendaylight.controller.md.sal.binding.api.DataBroker;
 import org.opendaylight.controller.sal.binding.api.RpcProviderRegistry;
 
-public class PathManagerProviderTest {
+public class UnicornProviderTest {
 
   private final DataBroker dataBroker = mock(DataBroker.class);
-  private PathManagerProvider provider;
+  private final RpcProviderRegistry rpcProviderRegistry = mock(RpcProviderRegistry.class);
+  private UnicornProvider provider;
 
   @Before
   public void setupProvider() throws Exception {
-    provider = new PathManagerProvider(dataBroker);
+    provider = new UnicornProvider(dataBroker, rpcProviderRegistry);
   }
 
   @Test

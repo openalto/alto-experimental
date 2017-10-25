@@ -10,9 +10,6 @@ package org.opendaylight.alto.ext.impl;
 import org.opendaylight.controller.md.sal.binding.api.DataBroker;
 import org.opendaylight.controller.md.sal.binding.api.DataTreeIdentifier;
 import org.opendaylight.controller.md.sal.common.api.data.LogicalDatastoreType;
-import org.opendaylight.controller.sal.binding.api.BindingAwareBroker.RpcRegistration;
-import org.opendaylight.controller.sal.binding.api.RpcProviderRegistry;
-import org.opendaylight.yang.gen.v1.urn.opendaylight.alto.ext.pathmanager.rev150105.AltoPathmanagerService;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.inventory.rev130819.FlowCapableNode;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.inventory.rev130819.tables.Table;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.flow.inventory.rev130819.tables.table.Flow;
@@ -28,15 +25,10 @@ public class PathManagerProvider {
   private static final Logger LOG = LoggerFactory.getLogger(PathManagerProvider.class);
 
   private final DataBroker dataBroker;
-  private final RpcProviderRegistry rpcProviderRegistry;
-  private RpcRegistration<AltoPathmanagerService> altoPathmanagerServiceRpcRegistration;
   private ListenerRegistration<PathListener> pathListenerReg;
 
-  public PathManagerProvider(final DataBroker dataBroker,
-      final RpcProviderRegistry rpcProviderRegistry) {
+  public PathManagerProvider(final DataBroker dataBroker) {
     this.dataBroker = dataBroker;
-    this.rpcProviderRegistry = rpcProviderRegistry;
-    this.setListener();
   }
 
   private void setListener() {
@@ -54,9 +46,7 @@ public class PathManagerProvider {
    * Method called when the blueprint container is created.
    */
   public void init() {
-    altoPathmanagerServiceRpcRegistration =
-        rpcProviderRegistry
-            .addRpcImplementation(AltoPathmanagerService.class, new PathManagerImpl());
+    setListener();
     LOG.info("PathManagerProvider Session Initiated");
   }
 
@@ -66,9 +56,6 @@ public class PathManagerProvider {
   public void close() {
     if (pathListenerReg != null) {
       pathListenerReg.close();
-    }
-    if (altoPathmanagerServiceRpcRegistration != null) {
-      altoPathmanagerServiceRpcRegistration.close();
     }
     LOG.info("PathManagerProvider Closed");
   }
