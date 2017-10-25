@@ -9,7 +9,9 @@ package org.opendaylight.alto.ext.impl.helper;
 
 import com.google.common.base.Optional;
 import org.opendaylight.controller.md.sal.binding.api.DataBroker;
+import org.opendaylight.controller.md.sal.binding.api.DataObjectModification;
 import org.opendaylight.controller.md.sal.binding.api.ReadOnlyTransaction;
+import org.opendaylight.controller.md.sal.binding.api.WriteTransaction;
 import org.opendaylight.controller.md.sal.common.api.data.LogicalDatastoreType;
 import org.opendaylight.yangtools.yang.binding.DataObject;
 import org.opendaylight.yangtools.yang.binding.InstanceIdentifier;
@@ -62,5 +64,29 @@ public class DataStoreHelper {
     }
 
     throw new ReadDataFailedException("Maybe data read is interrupted.");
+  }
+
+  public static <T extends DataObject> void writeOperational(
+      DataBroker dataBroker, InstanceIdentifier<T> iid, T data) throws WriteDataFailedException {
+    writeToDataStore(dataBroker, iid, LogicalDatastoreType.OPERATIONAL, data);
+  }
+
+  public static <T extends DataObject> void writeToDataStore(
+      DataBroker dataBroker, InstanceIdentifier<T> iid, LogicalDatastoreType type,
+      T data) throws WriteDataFailedException {
+    if (dataBroker == null) {
+      throw new WriteDataFailedException("No DataBroker in the context.");
+    }
+
+    WriteTransaction wx = dataBroker.newWriteOnlyTransaction();
+
+    try {
+      wx.merge(type, iid, data, true);
+      wx.submit();
+      return;
+    } catch (NullPointerException e) {
+      LOG.error("Cannot start a new read transaction:", e);
+    }
+    throw new WriteDataFailedException("Fail to write data for some reason.");
   }
 }

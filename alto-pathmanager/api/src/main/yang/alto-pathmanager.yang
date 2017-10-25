@@ -35,6 +35,12 @@ module alto-pathmanager {
                 type uint32;
             }
 
+            leaf priority {
+                type uint32;
+                mandatory true;
+                default 100;
+            }
+
             container flow-desc {
                 uses alto-flow-desc;
             }

@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.UUID;
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -61,6 +60,7 @@ import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.nodes.N
 import org.opendaylight.yang.gen.v1.urn.opendaylight.inventory.rev130819.nodes.NodeKey;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.model.match.types.rev131026.match.Layer3Match;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.model.match.types.rev131026.match.layer._3.match.Ipv4MatchBuilder;
+import org.opendaylight.yang.gen.v1.urn.tbd.params.xml.ns.yang.network.topology.rev131021.LinkId;
 import org.opendaylight.yangtools.yang.binding.InstanceIdentifier;
 
 /**
@@ -82,6 +82,8 @@ public class PathListenerTest {
 
   private PathListener pathListener1;
   private PathListener pathListener2;
+  private PathManagerUpdater updater1;
+  private PathManagerUpdater updater2;
 
   @Before
   public void before() throws Exception {
@@ -90,7 +92,8 @@ public class PathListenerTest {
     when(rx1.read(any(LogicalDatastoreType.class), any(InstanceIdentifier.class)))
         .thenReturn(null);
     when(dataBroker1.newReadOnlyTransaction()).thenReturn(rx1);
-    pathListener1 = new PathListener(dataBroker1);
+    updater1 = new PathManagerUpdater(dataBroker1);
+    pathListener1 = new PathListener(updater1);
 
     DataBroker dataBroker2 = mock(DataBroker.class);
     ReadOnlyTransaction rx2 = mock(ReadOnlyTransaction.class);
@@ -109,7 +112,8 @@ public class PathListenerTest {
                             new TableBuilder()
                                 .setId((short) 0)
                                 .setFlow(Arrays.asList(
-                                    getIpv4OutputFlow(new FlowId(new Uri(getRandomId("flow")))),
+                                    getIpv4OutputFlow(new FlowId(new Uri(getRandomId("flow"))),
+                                        getRandomId("openflow")),
                                     getIpv4DropFlow(new FlowId(new Uri(getRandomId("flow"))))))
                                 .build()))
                         .build())
@@ -137,11 +141,8 @@ public class PathListenerTest {
     when(rx2.read(any(LogicalDatastoreType.class), eq(PATH_MANAGER_IID)))
         .thenReturn(future3);
     when(dataBroker2.newReadOnlyTransaction()).thenReturn(rx2);
-    pathListener2 = new PathListener(dataBroker2);
-  }
-
-  @After
-  public void after() throws Exception {
+    updater2 = new PathManagerUpdater(dataBroker2);
+    pathListener2 = new PathListener(updater2);
   }
 
   private DataTreeIdentifier<Flow> getMockRootPath(NodeKey nodeKey, TableKey tableKey,
@@ -187,7 +188,7 @@ public class PathListenerTest {
     return getIpv4FlowBuilder(id).build();
   }
 
-  private Flow getIpv4OutputFlow(FlowId id) {
+  private Flow getIpv4OutputFlow(FlowId id, String output) {
     return getIpv4FlowBuilder(id)
         .setInstructions(new InstructionsBuilder()
             .setInstruction(Arrays.asList(new InstructionBuilder()
@@ -196,7 +197,7 @@ public class PathListenerTest {
                         .setAction(Arrays.asList(new ActionBuilder()
                             .setAction(new OutputActionCaseBuilder()
                                 .setOutputAction(new OutputActionBuilder()
-                                    .setOutputNodeConnector(new Uri(getRandomId("openflow")))
+                                    .setOutputNodeConnector(new Uri(output))
                                     .build())
                                 .build())
                             .build()))
@@ -244,8 +245,21 @@ public class PathListenerTest {
     when(change0.getRootNode()).thenReturn(rootNode);
     changes.add(change0);
 
+    DataTreeModification<Flow> change1 = mock(DataTreeModification.class);
+    NodeId nodeId1 = new NodeId(new Uri(getRandomId("openflow")));
+    FlowId flowId1 = new FlowId(new Uri(getRandomId("flow")));
+    when(change1.getRootPath()).thenReturn(getMockRootPath(new NodeKey(nodeId1),
+        new TableKey(DEFAULT_TABLE_ID), new FlowKey(flowId1)));
+    String output1 = getRandomId("openflow");
+    DataObjectModification<Flow> rootNode1 = getMockRootNode(ModificationType.WRITE,
+        getIpv4OutputFlow(flowId1, output1), getIpv4DropFlow(flowId1));
+    when(change1.getRootNode()).thenReturn(rootNode1);
+    changes.add(change1);
+
     pathListener1.onDataTreeChanged(changes);
+    updater2.addLink(output1, new LinkId(getRandomId("link")));
     pathListener2.onDataTreeChanged(changes);
+    updater2.removeLink(output1);
   }
 
   /**
@@ -261,7 +275,7 @@ public class PathListenerTest {
     when(change0.getRootPath()).thenReturn(getMockRootPath(new NodeKey(nodeId0),
         new TableKey(DEFAULT_TABLE_ID), new FlowKey(flowId0)));
     DataObjectModification<Flow> rootNode0 = getMockRootNode(ModificationType.WRITE,
-        getIpv4DropFlow(flowId0), getIpv4OutputFlow(flowId0));
+        getIpv4DropFlow(flowId0), getIpv4OutputFlow(flowId0, getRandomId("openflow")));
     when(change0.getRootNode()).thenReturn(rootNode0);
     changes.add(change0);
 
@@ -271,7 +285,7 @@ public class PathListenerTest {
     when(change1.getRootPath()).thenReturn(getMockRootPath(new NodeKey(nodeId1),
         new TableKey(DEFAULT_TABLE_ID), new FlowKey(flowId1)));
     DataObjectModification<Flow> rootNode1 = getMockRootNode(ModificationType.SUBTREE_MODIFIED,
-        getIpv4OutputFlow(flowId1), getIpv4DropFlow(flowId1));
+        getIpv4OutputFlow(flowId1, getRandomId("openflow")), getIpv4DropFlow(flowId1));
     when(change1.getRootNode()).thenReturn(rootNode1);
     changes.add(change1);
 
@@ -292,7 +306,7 @@ public class PathListenerTest {
     when(change0.getRootPath()).thenReturn(getMockRootPath(new NodeKey(nodeId0),
         new TableKey(DEFAULT_TABLE_ID), new FlowKey(flowId0)));
     DataObjectModification<Flow> rootNode0 = getMockRootNode(ModificationType.DELETE,
-        getIpv4OutputFlow(flowId0), null);
+        getIpv4OutputFlow(flowId0, getRandomId("openflow")), null);
     when(change0.getRootNode()).thenReturn(rootNode0);
     changes.add(change0);
 
