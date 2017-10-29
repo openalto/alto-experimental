@@ -28,5 +28,6 @@ and is available at http://www.eclipse.org/legal/epl-v10.html INTERNAL
     <module>alto-bwmonitor</module>
     <module>alto-pathmanager</module>
     <module>alto-unicorn</module>
+    <module>features</module>
   </modules>
 </project>
