@@ -14,7 +14,7 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
   <repository>mvn:org.opendaylight.controller/features-mdsal/{{VERSION}}/xml/features</repository>
   <repository>mvn:org.opendaylight.mdsal.model/features-mdsal-model/{{VERSION}}/xml/features</repository>
   <repository>mvn:org.opendaylight.netconf/features-restconf/{{VERSION}}/xml/features</repository>
-  <repository>mvn:org.opendaylight.dluxapps/features-dluxapps/{{VERSION}}/xml/features</repository>
+  <repository>mvn:org.opendaylight.dlux/features-dlux/{{VERSION}}/xml/features</repository>
   <repository>mvn:org.opendaylight.openflowplugin/features-openflowplugin/{{VERSION}}/xml/features</repository>
   <feature name='odl-alto-pathmanager-api' version='${project.version}' description='OpenDaylight :: alto-pathmanager :: api'>
     <feature version='${mdsal.model.version}'>odl-mdsal-models</feature>
@@ -33,7 +33,7 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
   <feature name='odl-alto-pathmanager-ui' version='${project.version}' description='OpenDaylight :: alto-pathmanager :: UI'>
     <feature version="${project.version}">odl-alto-pathmanager-rest</feature>
     <feature version="${restconf.version}">odl-mdsal-apidocs</feature>
-    <feature version="${dluxapps.version}">odl-dluxapps-yangui</feature>
+    <feature version="${dlux.version}">odl-dlux-yangui</feature>
   </feature>
   <feature name='odl-alto-pathmanager-cli' version='${project.version}' description='OpenDaylight :: alto-pathmanager :: CLI'>
     <feature version="${project.version}">odl-alto-pathmanager</feature>
