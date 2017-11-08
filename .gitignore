@@ -19,6 +19,7 @@
 .externalToolBuilders
 .helper
 .idea
+.vscode
 .metadata
 .project
 .settings
