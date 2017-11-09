@@ -35,12 +35,15 @@ public class BwmonitorUtils {
         return iid;
     }
 
-    public static boolean writeToSpeeds(String portId, Long rxSpeed, Long txSpeed, DataBroker db) {
+    public static boolean writeToSpeeds(String portId, Long rxSpeed, Long txSpeed,
+            Long capacity, Long availBw, DataBroker db) {
         WriteTransaction transaction = db.newWriteOnlyTransaction();
         InstanceIdentifier<Port> iid = BwmonitorUtils.toInstanceIdentifier(portId);
         Port node = new PortBuilder().setPortId(portId)
                 .setRxSpeed(BigInteger.valueOf(rxSpeed))
                 .setTxSpeed(BigInteger.valueOf(txSpeed))
+                .setCapacity(capacity)
+                .setAvailBw(availBw)
                 .build();
         transaction.put(LogicalDatastoreType.OPERATIONAL, iid, node);
         CheckedFuture<Void, TransactionCommitFailedException> future = transaction.submit();

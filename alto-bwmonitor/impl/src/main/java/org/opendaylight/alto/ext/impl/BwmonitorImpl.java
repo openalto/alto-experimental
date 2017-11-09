@@ -81,7 +81,7 @@ public class BwmonitorImpl implements AltoBwmonitorService {
             List<String> ports = input.getPortId();
             if (ports != null) {
                 for (String port : ports) {
-                    success = BwmonitorUtils.writeToSpeeds(port, 0L, 0L, db);
+                    success = BwmonitorUtils.writeToSpeeds(port, 0L, 0L, 0L, 0L, db);
                     if (success) {
                         /**
                          * Deliver databroker into utility function is inefficient
