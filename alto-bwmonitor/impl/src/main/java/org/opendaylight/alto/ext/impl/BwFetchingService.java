@@ -45,7 +45,7 @@ public class BwFetchingService implements DataTreeChangeListener<NodeConnector> 
      * Parameter to calculate the speed (magic number?)
      */
     private final static Integer TIME_SPAN = 3;
-    private final static Long NANOSECOND_PER_SECOND = 1000000000L;
+    private final static Long MILLISECOND_PER_SECOND = 1000L;
 
     /**
      * Contructor to get essential variables
@@ -144,9 +144,7 @@ public class BwFetchingService implements DataTreeChangeListener<NodeConnector> 
             LOG.debug("Done to read port statistic");
             if (bytes != null) {
                 LOG.debug("Processing new statistic");
-                Long timestamp = updatedStatistic.getFlowCapableNodeConnectorStatistics()
-                    .getDuration().getSecond().getValue() * NANOSECOND_PER_SECOND + updatedStatistic.getFlowCapableNodeConnectorStatistics()
-                    .getDuration().getNanosecond().getValue();
+                Long timestamp = System.currentTimeMillis();
                 statistic.rxHistory.put(timestamp, bytes.getReceived().longValue());
                 statistic.txHistory.put(timestamp, bytes.getTransmitted().longValue());
                 statistic.rxSpeed = computeStatisticFromHistory(statistic.rxHistory, timestamp);
@@ -212,9 +210,9 @@ public class BwFetchingService implements DataTreeChangeListener<NodeConnector> 
             if (item.getKey() != timestamp && item.getKey() > maxTime)
                 maxTime = item.getKey();
         }
-        Long speedFromLastRecord = (history.get(maxTime) - history.get(timestamp)) * NANOSECOND_PER_SECOND / (timestamp - maxTime);
+        Long speedFromLastRecord = (history.get(maxTime) - history.get(timestamp)) * MILLISECOND_PER_SECOND / (timestamp - maxTime);
         if (inTimeSpan) {
-            Long speedFromTimeSpan = (history.get(minTime) - history.get(timestamp)) * NANOSECOND_PER_SECOND / (timestamp - minTime);
+            Long speedFromTimeSpan = (history.get(minTime) - history.get(timestamp)) * MILLISECOND_PER_SECOND / (timestamp - minTime);
             return (long)(speedFromTimeSpan * 0.8 + speedFromLastRecord * 0.2);
         } else {
             return speedFromLastRecord;
