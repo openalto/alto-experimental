@@ -44,7 +44,7 @@ public class BwFetchingService implements DataTreeChangeListener<NodeConnector> 
     /**
      * Parameter to calculate the speed (magic number?)
      */
-    private final static Integer TIME_SPAN = 3;
+    private final static Integer TIME_SPAN = 1000;
     private final static Long MILLISECOND_PER_SECOND = 1000L;
 
     /**
@@ -210,9 +210,9 @@ public class BwFetchingService implements DataTreeChangeListener<NodeConnector> 
             if (item.getKey() != timestamp && item.getKey() > maxTime)
                 maxTime = item.getKey();
         }
-        Long speedFromLastRecord = (history.get(maxTime) - history.get(timestamp)) * MILLISECOND_PER_SECOND / (timestamp - maxTime);
+        Long speedFromLastRecord = (history.get(timestamp) - history.get(maxTime)) * MILLISECOND_PER_SECOND / (timestamp - maxTime);
         if (inTimeSpan) {
-            Long speedFromTimeSpan = (history.get(minTime) - history.get(timestamp)) * MILLISECOND_PER_SECOND / (timestamp - minTime);
+            Long speedFromTimeSpan = (history.get(timestamp) - history.get(timestamp)) * MILLISECOND_PER_SECOND / (timestamp - minTime);
             return (long)(speedFromTimeSpan * 0.8 + speedFromLastRecord * 0.2);
         } else {
             return speedFromLastRecord;
