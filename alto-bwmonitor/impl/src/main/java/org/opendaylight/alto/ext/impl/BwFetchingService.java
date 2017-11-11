@@ -46,6 +46,8 @@ public class BwFetchingService implements DataTreeChangeListener<NodeConnector> 
      */
     private final static Integer TIME_SPAN = 1000;
     private final static Long MILLISECOND_PER_SECOND = 1000L;
+    private final static Integer BYTES_PER_KILOBITS = 128;
+    private final static Long DEFAULT_ASSUME_CAPACITY = 100000000L; // Magic?
 
     /**
      * Contructor to get essential variables
@@ -153,17 +155,32 @@ public class BwFetchingService implements DataTreeChangeListener<NodeConnector> 
             }
         }
         LOG.debug("Done to process new statistic");
-        FlowCapableNodeConnector updatedFlowPort = updatedPort
-            .getAugmentation(FlowCapableNodeConnector.class);
-        if (updatedFlowPort != null) {
-            LOG.debug("Reading capacity of port {}", id);
-            statistic.capacity = updatedFlowPort.getCurrentSpeed();
-            LOG.debug("Done to read capacity");
-            statistic.availBw = statistic.capacity - statistic.txSpeed / 128;
-        }
+        statistic = updateAvailBw(updatedPort, statistic);
         if (statistic != null) {
             syncToDataBroker(id, statistic);
         }
+    }
+
+    private Statistic updateAvailBw(NodeConnector updatedPort, Statistic statistic) {
+        String portId = updatedPort.getKey().getId().getValue();
+        Long configuredCapacity = BwmonitorUtils.readConfiguredCapacity(portId, dataBroker);
+        LOG.debug("Reading configured capacity of port {}", portId);
+        if (configuredCapacity >= 0) {
+            statistic.capacity = configuredCapacity;
+            LOG.debug("Applied configured capacity");
+        } else {
+            FlowCapableNodeConnector updatedFlowPort = updatedPort.getAugmentation(FlowCapableNodeConnector.class);
+            if (updatedFlowPort != null) {
+                LOG.debug("Reading capacity of port {}", portId);
+                statistic.capacity = updatedFlowPort.getCurrentSpeed();
+                if (statistic.capacity.equals(0L)) {
+                    statistic.capacity = DEFAULT_ASSUME_CAPACITY;
+                }
+                LOG.debug("Done to read capacity");
+            }
+        }
+        statistic.availBw = statistic.capacity - statistic.txSpeed / BYTES_PER_KILOBITS;
+        return statistic;
     }
 
     private void cleanStatisticHistory(Map<Long, Long> history, Long timestamp, boolean inTimeSpan) {

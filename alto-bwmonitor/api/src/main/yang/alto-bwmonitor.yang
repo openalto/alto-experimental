@@ -55,4 +55,16 @@ module alto-bwmonitor {
             leaf capacity { type uint32; }
         }
     }
+
+    container config-capacity {
+        list capacity {
+            key port-id;
+            leaf port-id { type string; }
+
+            leaf capacity {
+                mandatory true;
+                type uint32;
+            }
+        }
+    }
 }
