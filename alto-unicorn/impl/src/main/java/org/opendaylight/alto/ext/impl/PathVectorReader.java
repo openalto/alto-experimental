@@ -55,7 +55,7 @@ public class PathVectorReader {
    */
   private void syncPathManager() {
     try {
-      PathManager pathManager = DataStoreHelper.readOperational(dataBroker, InstanceIdentifier
+      PathManager pathManager = DataStoreHelper.readConfiguration(dataBroker, InstanceIdentifier
           .create(PathManager.class));
       if (pathManager != null && pathManager.getPath() != null) {
         pathList = pathManager.getPath();

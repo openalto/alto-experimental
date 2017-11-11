@@ -36,6 +36,14 @@ public class DataStoreHelper {
     return readFromDataStore(dataBroker, iid, LogicalDatastoreType.OPERATIONAL);
   }
 
+  /**
+   * @return The configuration data of iid
+   */
+  public static <T extends DataObject> T readConfiguration(
+      DataBroker dataBroker, InstanceIdentifier<T> iid) throws ReadDataFailedException {
+    return readFromDataStore(dataBroker, iid, LogicalDatastoreType.CONFIGURATION);
+  }
+
   public static <T extends DataObject> T readFromDataStore(
       DataBroker dataBroker, InstanceIdentifier<T> iid, LogicalDatastoreType type)
       throws ReadDataFailedException {
@@ -69,6 +77,11 @@ public class DataStoreHelper {
   public static <T extends DataObject> void writeOperational(
       DataBroker dataBroker, InstanceIdentifier<T> iid, T data) throws WriteDataFailedException {
     writeToDataStore(dataBroker, iid, LogicalDatastoreType.OPERATIONAL, data);
+  }
+
+  public static <T extends DataObject> void writeConfiguration(
+      DataBroker dataBroker, InstanceIdentifier<T> iid, T data) throws WriteDataFailedException {
+    writeToDataStore(dataBroker, iid, LogicalDatastoreType.CONFIGURATION, data);
   }
 
   public static <T extends DataObject> void writeToDataStore(
