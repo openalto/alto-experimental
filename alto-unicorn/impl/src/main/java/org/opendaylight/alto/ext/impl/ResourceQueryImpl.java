@@ -11,11 +11,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 import org.opendaylight.controller.md.sal.binding.api.DataBroker;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.alto.ext.unicorn.rev150105.resource.query.input.ResourceQueryDesc;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.alto.ext.unicorn.rev150105.resource.query.output.Anes;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.alto.ext.unicorn.rev150105.resource.query.output.AnesBuilder;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.alto.ext.unicorn.rev150105.resource.query.output.anes.AneFlowCoefficientBuilder;
+import org.opendaylight.yang.gen.v1.urn.tbd.params.xml.ns.yang.network.topology.rev131021.network.topology.topology.Link;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,11 +46,12 @@ public class ResourceQueryImpl {
     PathVectorReader pvReader = new PathVectorReader(dataBroker);
 
     for (ResourceQueryDesc queryDesc : queryDescs) {
-      for (String egressPort : pvReader.get(queryDesc.getFlow())) {
+      for (Link link : pvReader.get(queryDesc.getFlow())) {
+        String egressPort = link.getSource().getSourceTp().getValue();
         if (! anesMap.containsKey(egressPort)) {
           anesMap.put(egressPort, new AnesBuilder()
               .setAneFlowCoefficient(new ArrayList<>())
-              .setAvailbw(availBwReader.get(egressPort))
+              .setAvailbw(availBwReader.get(link))
               .build());
         }
         anesMap.get(egressPort).getAneFlowCoefficient().add(

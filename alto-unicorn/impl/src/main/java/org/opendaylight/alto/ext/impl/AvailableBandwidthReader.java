@@ -9,11 +9,13 @@ package org.opendaylight.alto.ext.impl;
 
 import java.util.HashMap;
 import java.util.Map;
+
 import org.opendaylight.alto.ext.impl.helper.DataStoreHelper;
 import org.opendaylight.alto.ext.impl.helper.ReadDataFailedException;
 import org.opendaylight.controller.md.sal.binding.api.DataBroker;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.bwmonitor.rev150105.Speeds;
 import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.bwmonitor.rev150105.speeds.Port;
+import org.opendaylight.yang.gen.v1.urn.tbd.params.xml.ns.yang.network.topology.rev131021.network.topology.topology.Link;
 import org.opendaylight.yangtools.yang.binding.InstanceIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,9 +23,12 @@ import org.slf4j.LoggerFactory;
 public class AvailableBandwidthReader {
 
   private final static Logger LOG = LoggerFactory.getLogger(AvailableBandwidthReader.class);
+  private final static Integer BYTES_PER_KILOBITS = 128; // WARN: Duplicated Constant
+  private final static Long MAX_BANDWIDTH = 0xffffffffL;
 
   private final DataBroker dataBroker;
   private Map<String, Long> bandwidthMap = new HashMap<>();
+  private Map<String, Long> receivedBandwidthMap = new HashMap<>();
 
   public AvailableBandwidthReader(final DataBroker dataBroker) {
     this.dataBroker = dataBroker;
@@ -40,6 +45,8 @@ public class AvailableBandwidthReader {
       if (speeds != null && speeds.getPort() != null) {
         for (Port port : speeds.getPort()) {
           bandwidthMap.put(port.getPortId(), port.getAvailBw());
+          receivedBandwidthMap.put(port.getPortId(),
+              port.getCapacity() - port.getRxSpeed().longValue() / BYTES_PER_KILOBITS);
         }
       }
     } catch (ReadDataFailedException e) {
@@ -52,7 +59,10 @@ public class AvailableBandwidthReader {
    * @param portId the id of the queried port (the node connector id in opendaylight inventory)
    * @return the available bandwidth
    */
-  public Long get(String portId) {
-    return bandwidthMap.getOrDefault(portId, 0L);
+  public Long get(Link link) {
+    if (link.getSource().getSourceTp().getValue().startsWith("host")) {
+      return receivedBandwidthMap.getOrDefault(link.getDestination().getDestTp().getValue(), MAX_BANDWIDTH);
+    }
+    return bandwidthMap.getOrDefault(link.getSource().getSourceTp().getValue(), MAX_BANDWIDTH);
   }
 }

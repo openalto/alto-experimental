@@ -42,7 +42,7 @@ public class PathVectorReader {
 
   private final DataBroker dataBroker;
   private List<Path> pathList = new ArrayList<>();
-  private Map<LinkId, String> linkMap = new HashMap<>();
+  private Map<LinkId, Link> linkMap = new HashMap<>();
 
   public PathVectorReader(final DataBroker dataBroker) {
     this.dataBroker = dataBroker;
@@ -74,7 +74,7 @@ public class PathVectorReader {
       Topology topology = DataStoreHelper.readOperational(dataBroker, DEFAULT_TOPOLOGY_IID);
       if (topology != null && topology.getLink() != null) {
         for (Link link : topology.getLink()) {
-          linkMap.put(link.getLinkId(), link.getSource().getSourceTp().getValue());
+          linkMap.put(link.getLinkId(), link);
         }
       }
     } catch (ReadDataFailedException e) {
@@ -105,23 +105,23 @@ public class PathVectorReader {
   /**
    * Lookup path-manager from DataStore to get path vector of a flow.
    * @param flow flow object of query input
-   * @return path vector (a list of egress port)
+   * @return path vector (a list of link)
    */
-  public List<String> get(Flow flow) {
-    List<String> egressPorts = new ArrayList<>();
+  public List<Link> get(Flow flow) {
+    List<Link> currentLinks = new ArrayList<>();
 
     for (Path path : pathList) {
       if (PathManagerHelper.isFlowMatch(path.getFlowDesc(), toAltoFlowDesc(flow))) {
         for (Links links : path.getLinks()) {
-          String egressPortId = linkMap.get(links.getLink());
-          if (egressPortId != null) {
-            egressPorts.add(egressPortId);
+          Link currentLink = linkMap.get(links.getLink());
+          if (currentLink != null) {
+            currentLinks.add(currentLink);
           }
         }
         break;
       }
     }
 
-    return egressPorts;
+    return currentLinks;
   }
 }
