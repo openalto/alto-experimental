@@ -33,7 +33,7 @@ public class ResourceQueryImpl {
 
   /**
    * Compute raw resource state by looking up path-manager and bwmonitor.
-   * @param queryDescs
+   * @param queryDescs list of query descriptor
    * @return a list of path vector
    */
   public List<Anes> computeResource(List<ResourceQueryDesc> queryDescs) {

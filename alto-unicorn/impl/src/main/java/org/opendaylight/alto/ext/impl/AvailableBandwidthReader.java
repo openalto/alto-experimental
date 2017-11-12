@@ -55,8 +55,8 @@ public class AvailableBandwidthReader {
   }
 
   /**
-   * Lookup available bandwidth by port id.
-   * @param portId the id of the queried port (the node connector id in opendaylight inventory)
+   * Lookup available bandwidth by link.
+   * @param link the queried link (a ref of network-topology model)
    * @return the available bandwidth
    */
   public Long get(Link link) {
