@@ -14,6 +14,8 @@ import static org.mockito.Mockito.when;
 
 import com.google.common.base.Optional;
 import com.google.common.util.concurrent.CheckedFuture;
+
+import java.math.BigInteger;
 import java.util.Arrays;
 import org.junit.Assert;
 import org.junit.Before;
@@ -77,8 +79,16 @@ public class AltoUnicornServiceImplTest {
     Optional speedsOptional = mock(Optional.class);
     Speeds speeds = new SpeedsBuilder()
         .setPort(Arrays.asList(
-            new PortBuilder().setPortId("testPort1").setAvailBw(1000L).build(),
-            new PortBuilder().setPortId("testPort2").setAvailBw(2000L).build()
+            new PortBuilder().setPortId("testPort1")
+                .setRxSpeed(BigInteger.valueOf(0L))
+                .setTxSpeed(BigInteger.valueOf(0L))
+                .setCapacity(1000L)
+                .setAvailBw(1000L).build(),
+            new PortBuilder().setPortId("testPort2")
+                .setRxSpeed(BigInteger.valueOf(0L))
+                .setTxSpeed(BigInteger.valueOf(0L))
+                .setCapacity(2000L)
+                .setAvailBw(2000L).build()
         ))
         .build();
     when(speedsOptional.get()).thenReturn(speeds);
