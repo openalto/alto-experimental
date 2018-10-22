@@ -39,15 +39,15 @@ and is available at http://www.eclipse.org/legal/epl-v10.html
     </dependency>
 
     <dependency>
-      <groupId>org.opendaylight.alto.ext</groupId>
+      <groupId>org.opendaylight.alto.basic</groupId>
       <artifactId>alto-bwmonitor-impl</artifactId>
-      <version>${project.version}</version>
+      <version>0.1.4-SNAPSHOT</version>
     </dependency>
 
     <dependency>
-      <groupId>org.opendaylight.alto.ext</groupId>
+      <groupId>org.opendaylight.alto</groupId>
       <artifactId>alto-pathmanager-impl</artifactId>
-      <version>${project.version}</version>
+      <version>0.1.4-SNAPSHOT</version>
     </dependency>
 
     <!-- Testing Dependencies -->

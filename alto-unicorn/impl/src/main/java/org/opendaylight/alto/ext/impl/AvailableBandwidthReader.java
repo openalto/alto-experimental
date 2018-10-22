@@ -9,11 +9,11 @@ package org.opendaylight.alto.ext.impl;
 
 import java.util.HashMap;
 import java.util.Map;
-import org.opendaylight.alto.ext.impl.helper.DataStoreHelper;
-import org.opendaylight.alto.ext.impl.helper.ReadDataFailedException;
+import org.opendaylight.alto.basic.impl.helper.DataStoreHelper;
+import org.opendaylight.alto.basic.impl.helper.ReadDataFailedException;
 import org.opendaylight.controller.md.sal.binding.api.DataBroker;
-import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.bwmonitor.rev150105.Speeds;
-import org.opendaylight.yang.gen.v1.urn.opendaylight.params.xml.ns.yang.alto.bwmonitor.rev150105.speeds.Port;
+import org.opendaylight.yang.gen.v1.urn.alto.bwmonitor.rev150105.Speeds;
+import org.opendaylight.yang.gen.v1.urn.alto.bwmonitor.rev150105.speeds.Port;
 import org.opendaylight.yangtools.yang.binding.InstanceIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
